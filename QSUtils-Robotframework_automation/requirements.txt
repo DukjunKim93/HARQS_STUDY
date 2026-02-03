@@ -1,0 +1,30 @@
+# Runtime dependencies
+PySide6>=6.0.0
+psutil>=5.0.0
+PyYAML>=6.0
+appium-python-client
+bleak
+numpy
+opencv-python
+pycryptodome
+qdrant-client
+requests
+robotframework>=4.0
+robotframework-appiumlibrary
+scikit-image
+xlwings
+wakeonlan
+getmac
+imagehash
+pyzbar
+pyqrcode
+matplotlib
+pytesseract
+aiohttp
+ffmpeg-python
+noisereduce
+pydub
+pyserial
+--index-url https://bart.sec.samsung.net/artifactory/api/pypi/qsymphony-utils-pypi-local/simple
+sec-BTS
+sec-BTSReferenceEditor

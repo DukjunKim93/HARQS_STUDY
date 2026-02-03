@@ -1,0 +1,85 @@
+name: black
+
+on:
+  pull_request:
+    branches: ["main", "master"]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: ["main", "master"]
+
+jobs:
+  format-check:
+    runs-on: [ code-linux ]
+
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+      fail-fast: false
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          pip: 'latest'
+        env:
+          PIP_ROOT_USER_ACTION: ignore
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip --root-user-action=ignore
+          pip install -e .[dev] --root-user-action=ignore
+          pip install black --root-user-action=ignore
+
+      - name: Check code formatting with black
+        run: |
+          echo "Checking code formatting with black..."
+
+          # Get current Python version without dot
+          PYTHON_VERSION_NO_DOT=$(python -c "import sys; print('py' + ''.join(map(str, sys.version_info[:2])))")
+          echo "Current Python version: $PYTHON_VERSION_NO_DOT"
+
+          # Get supported target versions from black
+          SUPPORTED_VERSIONS=$(black --help | grep -A 20 "\-t.*\-\-target-version" | grep -o "py[0-9]\{2,3\}" | tr '\n' ' ')
+          echo "Black supported versions: $SUPPORTED_VERSIONS"
+
+          # Create target-version string with current version and all supported versions up to current
+          TARGET_VERSION_ARGS=""
+          # Get all Python versions from matrix
+          PYTHON_VERSIONS="${{ join(matrix.python-version, ' ') }}"
+          for version in $PYTHON_VERSIONS; do
+            # Convert 3.8 -> py38, 3.9 -> py39, etc.
+            version_py="py$(echo $version | tr -d '.')"
+            if echo "$SUPPORTED_VERSIONS" | grep -q "$version_py"; then
+              if [[ "$version_py" == "$PYTHON_VERSION_NO_DOT" ]] || [[ "$version_py" < "$PYTHON_VERSION_NO_DOT" ]]; then
+                TARGET_VERSION_ARGS="$TARGET_VERSION_ARGS --target-version $version_py"
+              fi
+            fi
+          done
+
+          echo "Using target-version arguments: $TARGET_VERSION_ARGS"
+
+          # Run black with dynamic target-version
+          if [ -n "$TARGET_VERSION_ARGS" ]; then
+            black $TARGET_VERSION_ARGS --check --diff src/ tests/
+          else
+            black --check --diff src/ tests/
+          fi
+
+          if [ $? -eq 0 ]; then
+            echo "✅ All files are properly formatted!"
+          else
+            echo "❌ Code formatting issues found. Please run 'black src/ tests/' to fix."
+            exit 1
+          fi

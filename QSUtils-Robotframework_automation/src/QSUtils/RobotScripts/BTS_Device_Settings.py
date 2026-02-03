@@ -1,0 +1,21 @@
+project = {"name": "HelloBTS", "revision": "2"}
+RunnerSettings = {"webcam": "WebCam01", "athub": "COM8"}
+ATHub01 = {
+    "title": "ATHub",
+    "type": "ATHub",
+    "name": "COM8",
+    "athub_dev_id": "1",
+    "port": "COM8",
+    "connection_type": "serial",
+    "connection_info1": "COM8",
+}
+WebCam01 = {
+    "title": "WebCam01",
+    "type": "WebCam",
+    "name": "C922 Pro Stream Webcam",
+    "imaging_dev_id": "1",
+    "connection_type": "device_index",
+    "connection_info1": "1",
+    "rect": "[[0,0],[1919,0],[0,1079],[1919,1079]]",
+    "nickname": "\\\\?\\usb#vid_046d&pid_085c&mi_00#7&155c57c5&0&0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\\global",
+}

@@ -1,0 +1,19 @@
+name: Request Team Review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  add_team_reviewers:
+    runs-on: [ code-linux ]
+
+    steps:
+      - name: Request team reviewer via REST API
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        run: |
+          curl -X POST https://github.sec.samsung.net/api/v3/repos/AEBT/QSUtils/pulls/${{ github.event.pull_request.number }}/requested_reviewers \
+          -H "Authorization: token $GH_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -d '{"team_reviewers":["qsymphony"]}'

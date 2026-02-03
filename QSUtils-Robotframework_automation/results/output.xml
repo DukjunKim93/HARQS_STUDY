@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.1 (Python 3.12.3 on linux)" generated="2026-01-14T18:44:59.935077" rpa="false" schemaversion="5">
+<suite id="s1" name="QSUtils" source="/home/seungbum/QSUtils">
+<suite id="s1-s1" name="Robot-Scripts-Package" source="/home/seungbum/QSUtils/robot-scripts-package">
+<suite id="s1-s1-s1" name="BTS Example" source="/home/seungbum/QSUtils/robot-scripts-package/BTS_Example.robot">
+<kw name="Log" owner="BuiltIn" type="SETUP">
+<msg time="2026-01-14T18:45:02.072262" level="INFO">[[Executed before any test cases or sub test suites in that test suite.]]</msg>
+<arg>[[Executed before any test cases or sub test suites in that test suite.]]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:02.071439" elapsed="0.001234"/>
+</kw>
+<test id="s1-s1-s1-t1" name="Example_AccessBTSVariables" line="60">
+<kw name="Log" owner="BuiltIn" type="SETUP">
+<msg time="2026-01-14T18:45:02.116708" level="INFO">[A test setup is something that is executed before a test case.]</msg>
+<arg>[A test setup is something that is executed before a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:02.116054" elapsed="0.000883"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-01-14T18:45:02.117822" level="INFO">Access Device Settings. At-hub, Serial, Sdb have to be connected</msg>
+<arg>Access Device Settings. At-hub, Serial, Sdb have to be connected</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:02.117287" elapsed="0.000919"/>
+</kw>
+<kw name="Access Device Settings">
+<kw name="Log To Console" owner="BuiltIn">
+<arg>""</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" start="2026-01-14T18:45:02.119264" elapsed="0.000530"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<msg time="2026-01-14T18:45:02.121070" level="FAIL">Variable '${ATHub01}' not found.</msg>
+<arg>${ATHub01}[port]</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="FAIL" start="2026-01-14T18:45:02.120040" elapsed="0.043357">Variable '${ATHub01}' not found.</status>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${DebugShell01}[port]</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:02.163902" elapsed="0.000189"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${SDB01}[ip]</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:02.164281" elapsed="0.000089"/>
+</kw>
+<status status="FAIL" start="2026-01-14T18:45:02.118683" elapsed="0.045917">Variable '${ATHub01}' not found.</status>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<arg>Access Reference Information. you have to have OCR reference which name(ID) is OCR_SDB01_image</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:02.164807" elapsed="0.000093"/>
+</kw>
+<kw name="Access Reference Information">
+<arg>${OCR_SDB01_image}</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:02.165265" elapsed="0.000173"/>
+</kw>
+<kw name="Log" owner="BuiltIn" type="TEARDOWN">
+<msg time="2026-01-14T18:45:02.166398" level="INFO">[A test teardown is executed after a test case.]</msg>
+<arg>[A test teardown is executed after a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:02.165791" elapsed="0.001236"/>
+</kw>
+<doc>Sample TC to use usercommands to access BTS variables.</doc>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:02.073028" elapsed="0.094194">Variable '${ATHub01}' not found.</status>
+</test>
+<test id="s1-s1-s1-t2" name="Example_BTS_KeySender" line="69">
+<kw name="Log" owner="BuiltIn" type="SETUP">
+<msg time="2026-01-14T18:45:02.257870" level="INFO">[A test setup is something that is executed before a test case.]</msg>
+<arg>[A test setup is something that is executed before a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:02.255395" elapsed="0.003226"/>
+</kw>
+<kw name="Keysender Set Delay">
+<msg time="2026-01-14T18:45:02.284034" level="FAIL">No keyword with name 'Keysender Set Delay' found.</msg>
+<arg>5s</arg>
+<status status="FAIL" start="2026-01-14T18:45:02.271432" elapsed="0.055294">No keyword with name 'Keysender Set Delay' found.</status>
+</kw>
+<kw name="Keysender Connect">
+<status status="NOT RUN" start="2026-01-14T18:45:02.328313" elapsed="0.001364"/>
+</kw>
+<kw name="Keysender Sendkey">
+<arg>KEY_MENU</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:02.331033" elapsed="0.001307"/>
+</kw>
+<kw name="Keysender Sendkey">
+<arg>KEY_DOWN</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:02.333651" elapsed="0.001265"/>
+</kw>
+<kw name="Keysender Disconnect" type="TEARDOWN">
+<msg time="2026-01-14T18:45:02.338757" level="FAIL">No keyword with name 'Keysender Disconnect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:02.337513" elapsed="0.043504">No keyword with name 'Keysender Disconnect' found.</status>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:02.210463" elapsed="0.172886">No keyword with name 'Keysender Set Delay' found.
+
+Also teardown failed:
+No keyword with name 'Keysender Disconnect' found.</status>
+</test>
+<test id="s1-s1-s1-t3" name="Example_BTS_ATHub" line="77">
+<kw name="Athub Connect" type="SETUP">
+<msg time="2026-01-14T18:45:02.486222" level="FAIL">No keyword with name 'Athub Connect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:02.479409" elapsed="0.049329">No keyword with name 'Athub Connect' found.</status>
+</kw>
+<kw name="Athub Disconnect" type="TEARDOWN">
+<msg time="2026-01-14T18:45:02.533343" level="FAIL">No keyword with name 'Athub Disconnect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:02.531875" elapsed="0.042835">No keyword with name 'Athub Disconnect' found.</status>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:02.427328" elapsed="0.148805">Setup failed:
+No keyword with name 'Athub Connect' found.
+
+Also teardown failed:
+No keyword with name 'Athub Disconnect' found.</status>
+</test>
+<test id="s1-s1-s1-t4" name="Example_BTS_DebugShell" line="91">
+<kw name="Debugshell Connect" type="SETUP">
+<msg time="2026-01-14T18:45:02.667203" level="FAIL">No keyword with name 'Debugshell Connect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:02.663796" elapsed="0.044910">No keyword with name 'Debugshell Connect' found.</status>
+</kw>
+<kw name="Debugshell Disconnect" type="TEARDOWN">
+<msg time="2026-01-14T18:45:02.715660" level="FAIL">No keyword with name 'Debugshell Disconnect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:02.712673" elapsed="0.045956">No keyword with name 'Debugshell Disconnect' found.</status>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:02.618969" elapsed="0.141863">Setup failed:
+No keyword with name 'Debugshell Connect' found.
+
+Also teardown failed:
+No keyword with name 'Debugshell Disconnect' found.</status>
+</test>
+<test id="s1-s1-s1-t5" name="Example_BTS_Image" line="105">
+<kw name="Sdb Connect" type="SETUP">
+<msg time="2026-01-14T18:45:02.865034" level="FAIL">No keyword with name 'Sdb Connect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:02.856843" elapsed="0.051346">No keyword with name 'Sdb Connect' found.</status>
+</kw>
+<kw name="Sdb Disconnect" type="TEARDOWN">
+<msg time="2026-01-14T18:45:02.915306" level="FAIL">No keyword with name 'Sdb Disconnect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:02.912065" elapsed="0.046203">No keyword with name 'Sdb Disconnect' found.</status>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:02.803663" elapsed="0.158734">Setup failed:
+No keyword with name 'Sdb Connect' found.
+
+Also teardown failed:
+No keyword with name 'Sdb Disconnect' found.</status>
+</test>
+<test id="s1-s1-s1-t6" name="Example_BTS_OCR" line="115">
+<kw name="Sdb Connect" type="SETUP">
+<msg time="2026-01-14T18:45:03.066877" level="FAIL">No keyword with name 'Sdb Connect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:03.060662" elapsed="0.050002">No keyword with name 'Sdb Connect' found.</status>
+</kw>
+<kw name="Sdb Disconnect" type="TEARDOWN">
+<msg time="2026-01-14T18:45:03.118036" level="FAIL">No keyword with name 'Sdb Disconnect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:03.115016" elapsed="0.045794">No keyword with name 'Sdb Disconnect' found.</status>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:03.008633" elapsed="0.154508">Setup failed:
+No keyword with name 'Sdb Connect' found.
+
+Also teardown failed:
+No keyword with name 'Sdb Disconnect' found.</status>
+</test>
+<test id="s1-s1-s1-t7" name="Example_BTS_Sdb" line="128">
+<kw name="Sdb Connect" type="SETUP">
+<msg time="2026-01-14T18:45:03.252793" level="FAIL">No keyword with name 'Sdb Connect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:03.251016" elapsed="0.045893">No keyword with name 'Sdb Connect' found.</status>
+</kw>
+<kw name="Sdb Disconnect" type="TEARDOWN">
+<msg time="2026-01-14T18:45:03.321884" level="FAIL">No keyword with name 'Sdb Disconnect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:03.314760" elapsed="0.052115">No keyword with name 'Sdb Disconnect' found.</status>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:03.206060" elapsed="0.169774">Setup failed:
+No keyword with name 'Sdb Connect' found.
+
+Also teardown failed:
+No keyword with name 'Sdb Disconnect' found.</status>
+</test>
+<test id="s1-s1-s1-t8" name="Example_BTS_Sdb_capture_TV_screen" line="146">
+<kw name="Sdb Connect" type="SETUP">
+<msg time="2026-01-14T18:45:03.481900" level="FAIL">No keyword with name 'Sdb Connect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:03.474943" elapsed="0.050646">No keyword with name 'Sdb Connect' found.</status>
+</kw>
+<kw name="Sdb Disconnect" type="TEARDOWN">
+<msg time="2026-01-14T18:45:03.529664" level="FAIL">No keyword with name 'Sdb Disconnect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:03.528213" elapsed="0.043525">No keyword with name 'Sdb Disconnect' found.</status>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:03.421736" elapsed="0.151741">Setup failed:
+No keyword with name 'Sdb Connect' found.
+
+Also teardown failed:
+No keyword with name 'Sdb Disconnect' found.</status>
+</test>
+<test id="s1-s1-s1-t9" name="Example_BTS_Sound" line="161">
+<kw name="Log" owner="BuiltIn" type="SETUP">
+<msg time="2026-01-14T18:45:03.665573" level="INFO">[A test setup is something that is executed before a test case.]</msg>
+<arg>[A test setup is something that is executed before a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:03.664415" elapsed="0.001572"/>
+</kw>
+<kw name="TVSPEAKER.Sound Record">
+<msg time="2026-01-14T18:45:03.675048" level="FAIL">No keyword with name 'TVSPEAKER.Sound Record' found.</msg>
+<var>${file}</var>
+<arg>10</arg>
+<arg>${OUTPUT DIR}/sound_muteon.wav</arg>
+<status status="FAIL" start="2026-01-14T18:45:03.671889" elapsed="0.045357">No keyword with name 'TVSPEAKER.Sound Record' found.</status>
+</kw>
+<kw name="TVSPEAKER.Sound Has Mute">
+<var>${ret}</var>
+<arg>recorded_file_path=${OUTPUT DIR}/sound_muteon.wav</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:03.719312" elapsed="0.001923"/>
+</kw>
+<kw name="Should Be True" owner="BuiltIn">
+<arg>${ret}</arg>
+<doc>Fails if the given condition is not true.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:03.723262" elapsed="0.000288"/>
+</kw>
+<kw name="Log" owner="BuiltIn" type="TEARDOWN">
+<msg time="2026-01-14T18:45:03.724290" level="INFO">[A test teardown is executed after a test case.]</msg>
+<arg>[A test teardown is executed after a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:03.723831" elapsed="0.000708"/>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:03.618100" elapsed="0.106638">No keyword with name 'TVSPEAKER.Sound Record' found.</status>
+</test>
+<test id="s1-s1-s1-t10" name="Example_BTS_Video" line="169">
+<kw name="Log" owner="BuiltIn" type="SETUP">
+<msg time="2026-01-14T18:45:03.809010" level="INFO">[A test setup is something that is executed before a test case.]</msg>
+<arg>[A test setup is something that is executed before a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:03.808642" elapsed="0.000668"/>
+</kw>
+<kw name="Webcam Videorecordstart">
+<msg time="2026-01-14T18:45:03.813191" level="FAIL">No keyword with name 'Webcam Videorecordstart' found.</msg>
+<arg>webcam_record.avi</arg>
+<status status="FAIL" start="2026-01-14T18:45:03.811056" elapsed="0.043773">No keyword with name 'Webcam Videorecordstart' found.</status>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<arg>2m</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:03.856319" elapsed="0.000205"/>
+</kw>
+<kw name="Webcam Videorecordstop">
+<var>${video_path}</var>
+<status status="NOT RUN" start="2026-01-14T18:45:03.856670" elapsed="0.001458"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>Recorded Path : ${video_path}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:03.859493" elapsed="0.000090"/>
+</kw>
+<kw name="Video Ismute">
+<var>${video_isMute}</var>
+<arg>${video_path}</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:03.859710" elapsed="0.001163"/>
+</kw>
+<kw name="Video Hasmute">
+<var>${video_hasMute}</var>
+<arg>${video_path}</arg>
+<arg>criteriaforfinding=1s</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:03.862094" elapsed="0.001302"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<arg>${video_hasMute}</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:03.864803" elapsed="0.000101"/>
+</kw>
+<kw name="Should Not Be True" owner="BuiltIn">
+<arg>${video_isMute}</arg>
+<doc>Fails if the given condition is true.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:03.865072" elapsed="0.000136"/>
+</kw>
+<kw name="Should Not Be True" owner="BuiltIn">
+<arg>${video_hasMute}</arg>
+<doc>Fails if the given condition is true.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:03.865319" elapsed="0.000076"/>
+</kw>
+<kw name="Log" owner="BuiltIn" type="TEARDOWN">
+<msg time="2026-01-14T18:45:03.866021" level="INFO">[A test teardown is executed after a test case.]</msg>
+<arg>[A test teardown is executed after a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:03.865642" elapsed="0.000682"/>
+</kw>
+<doc>Check the Video recorded files were muted</doc>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:03.766803" elapsed="0.099643">No keyword with name 'Webcam Videorecordstart' found.</status>
+</test>
+<test id="s1-s1-s1-t11" name="Example_BTS_WebCam" line="185">
+<kw name="Log" owner="BuiltIn" type="SETUP">
+<msg time="2026-01-14T18:45:03.950169" level="INFO">[A test setup is something that is executed before a test case.]</msg>
+<arg>[A test setup is something that is executed before a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:03.949786" elapsed="0.000601"/>
+</kw>
+<kw name="Webcam Showwebcam">
+<msg time="2026-01-14T18:45:03.953562" level="FAIL">No keyword with name 'Webcam Showwebcam' found.</msg>
+<arg>str=ON</arg>
+<status status="FAIL" start="2026-01-14T18:45:03.952217" elapsed="0.042515">No keyword with name 'Webcam Showwebcam' found.</status>
+</kw>
+<kw name="Webcam Captureimage">
+<var>${captured}</var>
+<arg>channel.jpg</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:03.996475" elapsed="0.001367"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${captured}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:03.999373" elapsed="0.000210"/>
+</kw>
+<kw name="Webcam Fullscreen">
+<arg>on</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:03.999853" elapsed="0.002730"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:04.004003" elapsed="0.000083"/>
+</kw>
+<kw name="Webcam Fullscreen">
+<arg>off</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:04.004260" elapsed="0.001269"/>
+</kw>
+<kw name="Webcam Videorecordstart">
+<arg>test.avi</arg>
+<status status="NOT RUN" start="2026-01-14T18:45:04.006904" elapsed="0.001263"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<arg>1s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:04.009496" elapsed="0.000094"/>
+</kw>
+<kw name="Webcam Videorecordpause">
+<status status="NOT RUN" start="2026-01-14T18:45:04.009719" elapsed="0.001216"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<arg>1s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:04.012229" elapsed="0.000080"/>
+</kw>
+<kw name="Webcam Videorecordresume">
+<status status="NOT RUN" start="2026-01-14T18:45:04.012430" elapsed="0.001491"/>
+</kw>
+<kw name="Sleep" owner="BuiltIn">
+<arg>1s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:04.015377" elapsed="0.000098"/>
+</kw>
+<kw name="Webcam Videorecordstop">
+<var>${recorded}</var>
+<status status="NOT RUN" start="2026-01-14T18:45:04.015608" elapsed="0.001297"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<arg>${recorded}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" start="2026-01-14T18:45:04.018302" elapsed="0.000083"/>
+</kw>
+<kw name="Log" owner="BuiltIn" type="TEARDOWN">
+<msg time="2026-01-14T18:45:04.018895" level="INFO">[A test teardown is executed after a test case.]</msg>
+<arg>[A test teardown is executed after a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:04.018595" elapsed="0.000537"/>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:03.907830" elapsed="0.111390">No keyword with name 'Webcam Showwebcam' found.</status>
+</test>
+<test id="s1-s1-s1-t12" name="Example_BTS_PatternGenerator" line="216">
+<kw name="Patterngenerator Connect" type="SETUP">
+<msg time="2026-01-14T18:45:04.113433" level="FAIL">No keyword with name 'Patterngenerator Connect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:04.110594" elapsed="0.044165">No keyword with name 'Patterngenerator Connect' found.</status>
+</kw>
+<kw name="Patterngenerator Disconnect" type="TEARDOWN">
+<msg time="2026-01-14T18:45:04.160579" level="FAIL">No keyword with name 'Patterngenerator Disconnect' found.</msg>
+<status status="FAIL" start="2026-01-14T18:45:04.158524" elapsed="0.044175">No keyword with name 'Patterngenerator Disconnect' found.</status>
+</kw>
+<tag>Example</tag>
+<status status="FAIL" start="2026-01-14T18:45:04.062504" elapsed="0.141704">Setup failed:
+No keyword with name 'Patterngenerator Connect' found.
+
+Also teardown failed:
+No keyword with name 'Patterngenerator Disconnect' found.</status>
+</test>
+<test id="s1-s1-s1-t13" name="Example_BTS_HighlightFailMessageOnRunner" line="230">
+<kw name="Log" owner="BuiltIn" type="SETUP">
+<msg time="2026-01-14T18:45:04.291167" level="INFO">[A test setup is something that is executed before a test case.]</msg>
+<arg>[A test setup is something that is executed before a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:04.290826" elapsed="0.000536"/>
+</kw>
+<kw name="Run Keyword And Highlight Fail Message" owner="BTS.BTS_Common">
+<kw name="Should Be Same">
+<msg time="2026-01-14T18:45:04.294145" level="FAIL">No keyword with name 'Should Be Same' found.</msg>
+<arg>11</arg>
+<arg>99</arg>
+<status status="FAIL" start="2026-01-14T18:45:04.292921" elapsed="0.043662">No keyword with name 'Should Be Same' found.</status>
+</kw>
+<msg time="2026-01-14T18:45:04.337993" level="FAIL">[Problem]HighlightFailMessageNo keyword with name 'Should Be Same' found.</msg>
+<arg>Should Be Same</arg>
+<arg>11</arg>
+<arg>99</arg>
+<arg>message=HighlightFailMessage</arg>
+<doc>Highlight fail message of the keyword at [BTS Runner] &gt; [Progress window] &gt; [Message] column.</doc>
+<status status="FAIL" start="2026-01-14T18:45:04.291509" elapsed="0.091591">[Problem]HighlightFailMessageNo keyword with name 'Should Be Same' found.</status>
+</kw>
+<kw name="Log" owner="BuiltIn" type="TEARDOWN">
+<msg time="2026-01-14T18:45:04.383952" level="INFO">[A test teardown is executed after a test case.]</msg>
+<arg>[A test teardown is executed after a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:04.383515" elapsed="0.000740"/>
+</kw>
+<doc>During test, various Fails would be occurred.
+Script developer can highlight important fail message at Runner's 'TestInProgressing' &gt; Message by using 'Run Keyword And Highlight Fail Message' keyword.
+(Ex: Distinguish between judgement fail and environment fail(connection fail, navigation fail, etc...)
+http://wiki.vd.sec.samsung.net/display/BTS/Leave+a+message+on+the+TestInProgressing</doc>
+<status status="FAIL" start="2026-01-14T18:45:04.246874" elapsed="0.137506">[Problem]HighlightFailMessageNo keyword with name 'Should Be Same' found.</status>
+</test>
+<test id="s1-s1-s1-t14" name="Example_BTS_RunnerVariables" line="237">
+<kw name="Log" owner="BuiltIn" type="SETUP">
+<msg time="2026-01-14T18:45:04.477265" level="INFO">[A test setup is something that is executed before a test case.]</msg>
+<arg>[A test setup is something that is executed before a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:04.475088" elapsed="0.003226"/>
+</kw>
+<kw name="Log To Console" owner="BuiltIn">
+<msg time="2026-01-14T18:45:04.481715" level="FAIL">Variable '${RunnerTCListRepeatIndex}' not found.</msg>
+<arg>${RunnerTCListRepeatIndex} : ${RunnerTCRepeatValue} : ${RunnerTCRepeatIndex}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="FAIL" start="2026-01-14T18:45:04.479150" elapsed="0.046566">Variable '${RunnerTCListRepeatIndex}' not found.</status>
+</kw>
+<kw name="Log" owner="BuiltIn" type="TEARDOWN">
+<msg time="2026-01-14T18:45:04.526601" level="INFO">[A test teardown is executed after a test case.]</msg>
+<arg>[A test teardown is executed after a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:04.526008" elapsed="0.000860"/>
+</kw>
+<doc>http://wiki.vd.sec.samsung.net/pages/viewpage.action?pageId=116481361
+When BTS runner execute robot test, appends some variables related to TC repeat information.
+BTS test automation script developer can use this in script.</doc>
+<status status="FAIL" start="2026-01-14T18:45:04.428282" elapsed="0.098692">Variable '${RunnerTCListRepeatIndex}' not found.</status>
+</test>
+<test id="s1-s1-s1-t15" name="Call keywords with a varying number of arguments" line="255">
+<kw name="Log" owner="BuiltIn" type="SETUP">
+<arg>[A test setup is something that is executed before a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="FAIL" start="2026-01-14T18:45:04.610761" elapsed="0.000406">Execution terminated by signal</status>
+</kw>
+<kw name="Log" owner="BuiltIn" type="TEARDOWN">
+<msg time="2026-01-14T18:45:04.611697" level="INFO">[A test teardown is executed after a test case.]</msg>
+<arg>[A test teardown is executed after a test case.]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:04.611415" elapsed="0.000546"/>
+</kw>
+<status status="FAIL" start="2026-01-14T18:45:04.568741" elapsed="0.043377">Setup failed:
+Execution terminated by signal</status>
+</test>
+<test id="s1-s1-s1-t16" name="Do conditional IF - ELSE IF - ELSE execution" line="282">
+<doc>Robot Framework 4 introduces native IF, ELSE IF, ELSE constructs to achieve conditional execution in your robot,
+giving you new possibilities for implementing logic branching</doc>
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:04.653675" elapsed="0.042075">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t17" name="Call a keyword that returns a value" line="295">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:04.737759" elapsed="0.042374">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t18" name="Loop a list" line="299">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:04.821791" elapsed="0.042024">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t19" name="Loop a dictionary" line="308">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:04.905798" elapsed="0.042105">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t20" name="Loop a range from 0 to end index" line="320">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:04.990903" elapsed="0.041952">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t21" name="Loop a range from start to end index" line="325">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.075025" elapsed="0.043073">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t22" name="Loop a range from start to end index with steps" line="330">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.160062" elapsed="0.042652">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t23" name="Nest loops" line="335">
+<doc>Robot Framework 3 did not natively support nested control structures (such as a FOR loop inside a FOR loop).
+Robot Framework 4 natively supports nested control structures, such as FOR loops and IF constructs</doc>
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.244826" elapsed="0.043454">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t24" name="Exit a loop on condition" line="351">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.331926" elapsed="0.042873">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t25" name="Continue a loop from the next iteration on condition" line="357">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.417816" elapsed="0.043842">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t26" name="Create a scalar variable" line="363">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.504935" elapsed="0.044097">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t27" name="Create a number variable" line="369">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.590691" elapsed="0.042948">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t28" name="Create a list variable" line="373">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.677054" elapsed="0.043336">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t29" name="Create a dictionary variable" line="379">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.764451" elapsed="0.043345">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t30" name="Access the items in a sequence (list, string)" line="385">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.850073" elapsed="0.043849">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t31" name="Split arguments to multiple lines" line="395">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:05.936988" elapsed="0.043314">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t32" name="Log available variables" line="401">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:06.023080" elapsed="0.042808">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t33" name="Evaluate Python expressions" line="408">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:06.107846" elapsed="0.041921">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t34" name="Use special variables" line="415">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:06.192763" elapsed="0.042041">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s1-t35" name="Timestamp_Format" line="425">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:06.277771" elapsed="0.041963">Test execution stopped due to a fatal error.</status>
+</test>
+<kw name="Log" owner="BuiltIn" type="TEARDOWN">
+<msg time="2026-01-14T18:45:06.363449" level="INFO">[[Executed after any test cases or sub test suites in that test suite.]]</msg>
+<arg>[[Executed after any test cases or sub test suites in that test suite.]]</arg>
+<arg>console=yes</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2026-01-14T18:45:06.363061" elapsed="0.000506"/>
+</kw>
+<doc>BTS CheatSheet, script snippets</doc>
+<meta name="Version">2022.10.06</meta>
+<status status="FAIL" start="2026-01-14T18:45:00.633886" elapsed="5.729764"/>
+</suite>
+<suite id="s1-s1-s2" name="BTS Template" source="/home/seungbum/QSUtils/robot-scripts-package/BTS_Template.robot">
+<test id="s1-s1-s2-t1" name="Example Hello BTS" line="65">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:06.449807" elapsed="0.044110">Test execution stopped due to a fatal error.</status>
+</test>
+<status status="FAIL" start="2026-01-14T18:45:06.405912" elapsed="0.130067"/>
+</suite>
+<suite id="s1-s1-s3" name="Checklist TestSuite Version 1.0" source="/home/seungbum/QSUtils/robot-scripts-package/Checklist_TestSuite Version 1.0.robot">
+<test id="s1-s1-s3-t1" name="test capture" line="86">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:06.664087" elapsed="0.043683">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s3-t2" name="TestTest" line="88">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:06.750918" elapsed="0.042800">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s3-t3" name="CreatMenuTree" line="92">
+<doc>EFL Menu Tree 생성  (기본 3step)</doc>
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:06.835810" elapsed="0.042045">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s3-t4" name="BT Remote Test(SoftPower)" line="97">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:06.921143" elapsed="0.041744">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s3-t5" name="BT Remote Test_Random(SoftPower)" line="199">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:07.005178" elapsed="0.044507">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s3-t6" name="captureimage" line="295">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:07.093910" elapsed="0.043733">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s3-t7" name="BT Remote_Home Test(SoftPower)" line="303">
+<tag>robot:exit</tag>
+<status status="FAIL" start="2026-01-14T18:45:07.179776" elapsed="0.043102">Test execution stopped due to a fatal error.</status>
+</test>
+<test id="s1-s1-s3-t8" name="GotoSoundOutput_Check" line="457">
+<tag>robot:exit</tag>

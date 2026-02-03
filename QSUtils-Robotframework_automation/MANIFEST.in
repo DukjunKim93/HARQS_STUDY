@@ -1,0 +1,15 @@
+include README.md
+include requirements.txt
+include LICENSE
+recursive-include QSUtils/QSMonitor *.py
+recursive-include QSUtils/Network *.py
+recursive-include QSUtils/command *.py
+recursive-include QSUtils/command *.sh
+recursive-include QSUtils/ADBDevice *.py
+recursive-include QSUtils/QSLogger *.py
+recursive-include QSUtils/Utils *.py
+recursive-include QSUtils/UIFramework *.py
+recursive-include QSUtils/config *.py
+recursive-include QSUtils/core *.py
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]

@@ -1,0 +1,127 @@
+[build-system]
+requires = ["hatchling", "wheel"]
+build-backend = "hatchling.build"
+
+[project]
+name = "QSUtils"
+version = "1.2.0"
+authors = [
+    { name = "WaLyong Cho", email = "walyong.cho@samsung.com" },
+]
+description = "Q-Symphony Device Monitor - A tool for monitoring and managing Q-Symphony devices"
+readme = "README.md"
+license = { text = "LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Hardware",
+    "Topic :: Utilities",
+]
+keywords = ["qsymphony", "monitor", "adb", "device", "android", "samsung"]
+dependencies = [
+    "PySide6>=6.0.0",
+    "psutil>=5.0.0",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-qt>=4.4",
+]
+linux = [
+    "pyudev",
+]
+robot = [
+    "robotframework",
+    "robotframework-appiumlibrary",
+    "xlwings",
+    "appium-python-client",
+    "opencv-python",
+    "numpy",
+    "scikit-image",
+    "requests",
+    "bleak",
+    "pycryptodome",
+    "qdrant-client",
+    "wakeonlan",
+    "getmac",
+    "imagehash",
+    "pyzbar",
+    "pyqrcode",
+    "matplotlib",
+    "pytesseract",
+    "aiohttp",
+    "ffmpeg-python",
+    "noisereduce",
+    "pydub",
+    "pyserial",
+]
+
+[project.urls]
+Homepage = "https://github.sec.samsung.net/AEBT/QSUtils"
+Repository = "https://github.sec.samsung.net/AEBT/QSUtils"
+"Bug Reports" = "https://github.sec.samsung.net/AEBT/QSUtils/issues"
+
+[project.scripts]
+qsmonitor = "QSUtils.QSMonitor.qsmonitor:main"
+qslogger = "QSUtils.QSLogger.qslogger:main"
+
+[tool.hatch.build]
+include = [
+    "QSUtils/**/*.py",
+    "QSUtils/**/*.sh",
+    "QSUtils/RobotScripts/**/*",
+    "*.yaml",
+    "*.yml",
+    "*.json",
+    "*.txt",
+    "*.md",
+    "LICENSE",
+    "MANIFEST.in",
+]
+exclude = [
+    "tests/**",
+    "**/__pycache__",
+    "**/*.py[co]",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/QSUtils"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312', 'py313', 'py314']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | QSUtils\.egg-info
+)/
+'''
