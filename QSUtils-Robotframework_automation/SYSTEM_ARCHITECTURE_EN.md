@@ -71,6 +71,41 @@ GLOBAL_DUMP_COMPLETED
      └─► JFrogManager (optional upload)
 ```
 
+### 3.1. Code Walkthrough (Annotated)
+
+Below is a short, **Code I–style** annotated snippet to show how the Unified Dump pipeline is conceptually wired. The
+actual classes live under `src/QSUtils/QSMonitor/services/`, `src/QSUtils/DumpManager/`, and `src/QSUtils/JFrogUtils/`.
+
+```python
+# Pseudo-usage: Unified dump orchestration (annotated)
+#
+# 1) A component triggers a unified dump event
+event_bus.emit("UNIFIED_DUMP_REQUESTED", {
+    "triggered_by": "manual",   # comment: manual / crash / qs_failed
+    "upload_enabled": True,     # comment: whether to upload to JFrog
+})
+
+# 2) UnifiedDumpCoordinator receives the event and creates an Issue folder
+issue_dir = coordinator.create_issue_dir()   # comment: logs/issues/<timestamp>/
+coordinator.enqueue_devices(devices)         # comment: queue devices for dump extraction
+
+# 3) DumpProcessManager runs per-device extraction
+for device in coordinator.next_devices():
+    dump_manager = DumpProcessManager(device)
+    dump_manager.run(issue_dir)              # comment: writes logs under issue_dir/device_id/
+
+# 4) Coordinator aggregates results and emits completion
+event_bus.emit("GLOBAL_DUMP_COMPLETED", {
+    "issue_dir": issue_dir,
+    "success_count": 3,
+    "fail_count": 0,
+})
+
+# 5) If enabled, JFrogManager uploads the Issue folder
+if upload_enabled:
+    jfrog_manager.upload_issue(issue_dir)    # comment: may run in background thread
+```
+
 ## 4. Event-Driven Architecture
 
 QSUtils uses two scopes of events:
@@ -80,6 +115,29 @@ QSUtils uses two scopes of events:
 
 This design keeps UI components lightweight and allows background tasks to run without blocking the main thread.
 
+### 4.1. Code Walkthrough (Annotated)
+
+```python
+# Pseudo-usage: Event flow (annotated)
+#
+# Device-level dump completion
+device_event_bus.emit("DUMP_COMPLETED", {
+    "device_id": "TV-1234",
+    "success": True,
+    "dump_path": "/logs/issues/240113-120000/TV-1234/",
+})
+
+# Global completion after all device dumps
+global_event_bus.emit("GLOBAL_DUMP_COMPLETED", {
+    "issue_id": "240113-120000",
+    "success_count": 3,
+    "fail_count": 0,
+})
+
+# UI listens and updates status bar without blocking the UI thread
+ui.on_event("GLOBAL_DUMP_COMPLETED", lambda payload: status_bar.show_done(payload))
+```
+
 ## 5. Robot Framework Automation
 
 Automation support is shipped as a Robot Framework library package:
@@ -87,6 +145,20 @@ Automation support is shipped as a Robot Framework library package:
 - `QSUtils.RobotScripts.BTS.*` provides test keywords for mobile, Excel, video, and device setup workflows.
 - Templates and examples in `src/QSUtils/RobotScripts/` and `tests/robot_script/` provide starting points for custom
   automation suites.
+
+### 5.1. Code Walkthrough (Annotated)
+
+```robotframework
+*** Settings ***
+Library    BTS.BTS_ATHub    ${ATHub01}   # comment: IR hub control for power on/off
+Variables  BTS_Device_Settings.py       # comment: device connection details
+
+*** Test Cases ***
+Power On TV
+    athub_connect
+    athub_sendIR    DISCRET_POWER_ON    # comment: send IR code to power on
+    athub_disconnect
+```
 
 ## 6. Typical Usage Scenarios
 

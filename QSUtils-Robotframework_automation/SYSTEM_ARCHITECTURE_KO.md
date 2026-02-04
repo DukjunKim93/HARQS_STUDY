@@ -71,6 +71,41 @@ GLOBAL_DUMP_COMPLETED
      └─► JFrogManager (optional upload)
 ```
 
+### 3.1. 코드 워크스루 (주석 포함)
+
+아래는 **Code I** 스타일로 흐름을 이해하기 쉽게 정리한 예시입니다. 실제 클래스는
+`src/QSUtils/QSMonitor/services/`, `src/QSUtils/DumpManager/`, `src/QSUtils/JFrogUtils/`에 있습니다.
+
+```python
+# 예시: 통합 덤프 오케스트레이션 (주석 포함)
+#
+# 1) 컴포넌트가 통합 덤프 이벤트를 트리거
+event_bus.emit("UNIFIED_DUMP_REQUESTED", {
+    "triggered_by": "manual",   # 주석: manual / crash / qs_failed
+    "upload_enabled": True,     # 주석: JFrog 업로드 여부
+})
+
+# 2) UnifiedDumpCoordinator가 Issue 폴더 생성
+issue_dir = coordinator.create_issue_dir()   # 주석: logs/issues/<timestamp>/
+coordinator.enqueue_devices(devices)         # 주석: 장비 덤프 큐 구성
+
+# 3) 장비별 덤프 추출 수행
+for device in coordinator.next_devices():
+    dump_manager = DumpProcessManager(device)
+    dump_manager.run(issue_dir)              # 주석: issue_dir/device_id/ 하위로 저장
+
+# 4) 완료 집계 후 전역 이벤트 발생
+event_bus.emit("GLOBAL_DUMP_COMPLETED", {
+    "issue_dir": issue_dir,
+    "success_count": 3,
+    "fail_count": 0,
+})
+
+# 5) 설정에 따라 JFrog 업로드 실행
+if upload_enabled:
+    jfrog_manager.upload_issue(issue_dir)    # 주석: 백그라운드 업로드 가능
+```
+
 ## 4. 이벤트 기반 구조
 
 QSUtils는 두 가지 이벤트 스코프를 사용합니다.
@@ -80,12 +115,49 @@ QSUtils는 두 가지 이벤트 스코프를 사용합니다.
 
 이 구조 덕분에 UI는 가볍고, 백그라운드 작업은 메인 스레드를 블록하지 않습니다.
 
+### 4.1. 코드 워크스루 (주석 포함)
+
+```python
+# 예시: 이벤트 흐름 (주석 포함)
+#
+# 장치 덤프 완료 이벤트
+device_event_bus.emit("DUMP_COMPLETED", {
+    "device_id": "TV-1234",
+    "success": True,
+    "dump_path": "/logs/issues/240113-120000/TV-1234/",
+})
+
+# 모든 장치 완료 후 전역 이벤트
+global_event_bus.emit("GLOBAL_DUMP_COMPLETED", {
+    "issue_id": "240113-120000",
+    "success_count": 3,
+    "fail_count": 0,
+})
+
+# UI는 이벤트를 받아 상태바를 업데이트 (메인 스레드 블로킹 없음)
+ui.on_event("GLOBAL_DUMP_COMPLETED", lambda payload: status_bar.show_done(payload))
+```
+
 ## 5. Robot Framework 자동화
 
 Robot Framework 라이브러리 형태로 자동화 지원을 제공합니다.
 
 - `QSUtils.RobotScripts.BTS.*`가 모바일/엑셀/비디오/장치 설정 관련 키워드를 제공
 - `src/QSUtils/RobotScripts/` 및 `tests/robot_script/`에 예시/템플릿 포함
+
+### 5.1. 코드 워크스루 (주석 포함)
+
+```robotframework
+*** Settings ***
+Library    BTS.BTS_ATHub    ${ATHub01}   # 주석: IR 허브로 전원 제어
+Variables  BTS_Device_Settings.py       # 주석: 디바이스 연결 정보
+
+*** Test Cases ***
+Power On TV
+    athub_connect
+    athub_sendIR    DISCRET_POWER_ON    # 주석: 전원 ON IR 코드 전송
+    athub_disconnect
+```
 
 ## 6. 대표 사용 시나리오
 
