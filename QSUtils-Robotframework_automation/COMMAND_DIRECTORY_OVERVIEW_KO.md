@@ -75,6 +75,99 @@ command/
 
 ---
 
+
+## 3-4. 상속/호출 관계 조직도 (핵심 그림)
+
+아래 다이어그램은 `command/`에서 자주 헷갈리는 **상속 관계(클래스 계층)**와
+**실행 호출 관계(어떤 함수가 어떤 함수를 호출하는지)**를 함께 보여줍니다.
+
+### A) 클래스 상속 관계 (Inheritance)
+
+```mermaid
+classDiagram
+    class CommandExecutor {
+      <<abstract>>
+      +execute(shell_command)
+      +execute_async(shell_command, callback)
+    }
+    class ADBCommandExecutor
+    CommandExecutor <|-- ADBCommandExecutor
+
+    class BaseCommand~T~ {
+      <<abstract>>
+      +get_shell_command()
+      +handle_response(lines)
+      +execute()
+      +execute_async(callback)
+    }
+
+    class RebootCommand
+    class NetworkInterfaceCommand
+    class PreferenceDataCommandHandler
+    class SymphonyStatusCommandHandler
+
+    BaseCommand <|-- RebootCommand
+    BaseCommand <|-- NetworkInterfaceCommand
+    BaseCommand <|-- PreferenceDataCommandHandler
+    BaseCommand <|-- SymphonyStatusCommandHandler
+
+    class CommandTask
+```
+
+### B) 함수 호출 흐름 (Who calls who)
+
+```mermaid
+flowchart TD
+    UI[QSMonitor Feature/Tab] --> F[CommandFactory.create_command]
+    F --> C[cmd_xxx(BaseCommand 하위)]
+
+    C --> E1[BaseCommand.execute]
+    C --> E2[BaseCommand.execute_async]
+
+    E1 --> V1[validator.validate_all]
+    E1 --> X1[executor.execute]
+    X1 --> A1[ADBCommandExecutor.execute]
+    A1 --> D1[ADBDevice.execute_adb_shell]
+
+    E2 --> V2[validator.validate_all]
+    E2 --> X2[executor.execute_async]
+    X2 --> A2[ADBCommandExecutor.execute_async]
+    A2 --> D2[ADBDevice.execute_adb_shell_async]
+
+    D1 --> H1[handle_response]
+    D2 --> H2[handle_response]
+    H1 --> R[CommandResult]
+    H2 --> R
+    R --> CB[UI callback / DeviceCommandExecutor]
+```
+
+### C) 실행 컨텍스트 포함 버전 (Task/Thread 관점)
+
+```mermaid
+sequenceDiagram
+    participant U as UI/GeneralTab
+    participant F as CommandFactory
+    participant T as CommandTask
+    participant C as cmd_xxx(BaseCommand)
+    participant X as ADBCommandExecutor
+    participant D as ADBDevice
+
+    U->>F: create_command(command_type)
+    F-->>U: command instance
+    U->>T: create_task(command, callback)
+    T->>C: execute_async(...)
+    C->>X: executor.execute_async(shell_command)
+    X->>D: execute_adb_shell_async(shell_command)
+    D-->>C: output callback
+    C->>C: handle_response(output)
+    C-->>T: CommandResult
+    T-->>U: callback(handler, data)
+```
+
+발표 팁:
+- **상속은 classDiagram(A)**, **실행은 flowchart/sequence(B,C)**로 나눠 보여주면 이해가 빠릅니다.
+- 질문이 나오면 “BaseCommand가 실행 템플릿, cmd_xxx는 도메인 로직”이라는 문장으로 정리하면 좋습니다.
+
 ## 4) 실행 오케스트레이션 계층
 
 ## 4-1. `command_factory.py`
