@@ -36,6 +36,20 @@
 
 즉, **QSMonitor(UI) + command(실행) + DumpManager(장애 분석) + JFrog(아카이빙)**가 운영 흐름의 핵심 축임.
 
+### 구조도 (전체 컴포넌트 맵)
+
+```mermaid
+flowchart LR
+    A[QSMonitor UI] --> B[Command Layer]
+    A --> C[DumpManager]
+    A --> D[Event Bus]
+    B --> E[ADBDevice]
+    C --> E
+    C --> F[JFrogUtils]
+    D --> A
+    D --> C
+```
+
 ---
 
 ## 페이지 3. QSMonitor 실행 진입점
@@ -67,6 +81,21 @@ QSMonitor 실행 흐름은 매우 단순하고 명확함.
 - QSMonitor 폴더만 보면 단순해 보이지만,
 - 실제로는 UIFramework와 결합해 강력한 공통 패턴(상속 + 이벤트)을 활용함
 
+### 구조도 (QSMonitor 내부 레이어)
+
+```mermaid
+flowchart TB
+    CORE[core
+Events/Config] --> UI[ui
+MainWindow/DeviceWindow/Tab]
+    UI --> FEAT[features
+Default/Network/SpeakerGrid/AutoReboot]
+    UI --> SVC[services
+CrashMonitor/UnifiedDumpCoordinator]
+    UI --> BASE[UIFramework Base
+BaseMainWindow/BaseDeviceWidget]
+```
+
 ---
 
 ## 페이지 5. 상속 구조 (중요)
@@ -85,6 +114,19 @@ QSMonitor 실행 흐름은 매우 단순하고 명확함.
 - 공통기능(디바이스 연결 상태, 세션 제어, 덤프 버튼, 상태바 등)은 베이스에서 해결
 - QSMonitor는 “무엇을 추가할지”에 집중 (AutoReboot 상태 표시, 탭 구성 등)
 
+### 구조도 (상속 계층)
+
+```mermaid
+classDiagram
+    BaseMonitorApplication <|-- QSMonitorApplication
+    BaseMainWindow <|-- MainWindow
+    BaseDeviceWindow <|-- DeviceWindow
+    BaseDeviceWidget <|-- DeviceWidget
+    BaseFeature <|-- DefaultMonitorFeature
+    BaseFeature <|-- NetworkMonitorFeature
+    BaseFeature <|-- SpeakerGridFeature
+```
+
 ---
 
 ## 페이지 6. 디바이스 단위 동작 원리 (DeviceWidget 중심)
@@ -99,6 +141,23 @@ QSMonitor 실행 흐름은 매우 단순하고 명확함.
 
 즉, 디바이스당 **(UI + 명령 실행 + 크래시 감시 + 덤프 트리거)**가 한 컨텍스트로 묶여 움직임.
 
+### 구조도 (디바이스 탭 런타임)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant DW as DeviceWidget
+    participant CH as CommandHandler
+    participant CS as CrashMonitorService
+    participant DM as DumpManager
+
+    U->>DW: Start Session
+    DW->>CH: register/execute commands
+    DW->>CS: start_monitoring()
+    CS-->>DW: CRASH_DETECTED event
+    DW->>DM: on_dump_clicked()
+```
+
 ---
 
 ## 페이지 7. 이벤트 기반 구조 (QSMonitor 운영 핵심)
@@ -111,6 +170,19 @@ QSMonitor 실행 흐름은 매우 단순하고 명확함.
 
 핵심 메시지:
 - “함수 호출 체인”보다 “이벤트 전파”가 중심이라 모듈 결합도가 낮고 확장에 유리함
+
+### 구조도 (이벤트 전파)
+
+```mermaid
+flowchart LR
+    RQ[UNIFIED_DUMP_REQUESTED] --> UDC[UnifiedDumpCoordinator]
+    UDC --> DR[DUMP_REQUESTED per device]
+    DR --> DPM[DumpProcessManager]
+    DPM --> DC[DUMP_COMPLETED]
+    DC --> UDC
+    UDC --> GC[GLOBAL_DUMP_COMPLETED]
+    UDC --> JU[JFROG_UPLOAD_STARTED]
+```
 
 ---
 
@@ -132,6 +204,16 @@ QSMonitor 실행 흐름은 매우 단순하고 명확함.
 실무 포인트:
 - 새 자동화 요구가 생기면 `cmd_xxx.py`를 추가하고 팩토리에 연결하면 확장 가능
 
+### 구조도 (Command 실행 파이프라인)
+
+```mermaid
+flowchart LR
+    F[CommandFactory] --> C[BaseCommand/cmd_xxx]
+    C --> E[ADBCommandExecutor]
+    C --> T[CommandTask]
+    T --> CB[UI Callback]
+```
+
 ---
 
 ## 페이지 9. DumpManager 분석 (장애 분석/증적 수집 핵심)
@@ -151,6 +233,22 @@ QSMonitor 실행 흐름은 매우 단순하고 명확함.
 의미:
 - 단순 로그 저장이 아니라, **장애 시점 데이터 수집 파이프라인**을 표준화한 컴포넌트
 
+### 구조도 (Dump 상태 머신)
+
+```mermaid
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE --> STARTING
+    STARTING --> EXTRACTING
+    EXTRACTING --> VERIFYING
+    VERIFYING --> COMPLETED
+    EXTRACTING --> FAILED
+    EXTRACTING --> TIMEOUT
+    COMPLETED --> IDLE
+    FAILED --> IDLE
+    TIMEOUT --> IDLE
+```
+
 ---
 
 ## 페이지 10. QSMonitor + DumpManager + JFrog 통합 흐름
@@ -165,6 +263,23 @@ QSMonitor 실행 흐름은 매우 단순하고 명확함.
 6. 결과를 manifest에 기록하고 UI 상태 반영
 
 핵심은 “장치 단위 실행 + 전역 집계” 2계층 구조라는 점.
+
+### 구조도 (End-to-End 시퀀스)
+
+```mermaid
+sequenceDiagram
+    participant M as MainWindow
+    participant U as UnifiedDumpCoordinator
+    participant D as DumpProcessManager
+    participant J as JFrogManager
+
+    M->>U: UNIFIED_DUMP_REQUESTED
+    U->>D: DUMP_REQUESTED (per device)
+    D-->>U: DUMP_COMPLETED
+    U-->>M: GLOBAL_DUMP_COMPLETED
+    U->>J: upload(issue)
+    J-->>M: JFROG_UPLOAD_COMPLETED
+```
 
 ---
 
