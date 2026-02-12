@@ -110,8 +110,9 @@ classDiagram
 > 표기 규칙
 > - **상속관계**: 대표 클래스 기준 `자식 <- 부모`
 > - **전담 기능**: 이 파일이 command 시스템에서 맡는 핵심 역할
+> - **분류 기준**: 상속 한 가지 기준만이 아니라, **(a) command 실행 계층에서의 책임** + **(b) 대표 상속 루트(BaseCommand/TestWampCommand/기타 인프라)**를 함께 반영
 
-### 4-1. 코어 추상화/공통
+### 4-1. 코어 추상화/공통 *(BaseCommand/Executor/Validator 기반 공통 루트)*
 
 | 파일 | 주요 클래스(상속관계) | 전담 기능 |
 |---|---|---|
@@ -122,7 +123,7 @@ classDiagram
 | `common.py` | `ExecutionContext`, `CommandError` | 최소 공통 타입(실행 문맥, 예외 표현) 정의 |
 | `__init__.py` | (클래스 없음) | 패키지 식별 파일 |
 
-### 4-2. WAMP/디바이스 제어 명령어 계열 (`cmd_*.py`)
+### 4-2. WAMP/디바이스 제어 명령어 계열 (`cmd_*.py`) *(주요 루트: TestWampCommand / DspAudioSettingCommand / BaseCommand)*
 
 | 파일 | 주요 클래스(상속관계) | 전담 기능 |
 |---|---|---|
@@ -143,7 +144,7 @@ classDiagram
 | `cmd_reboot.py` | `RebootCommand <- BaseCommand[bool]` | 디바이스 재부팅 명령 수행 및 성공/실패 판정 |
 | `cmd_logging.py` | `LoggingCommand <- BaseCommand` | `logcat` 장시간 수집, 파일 저장, 프로세스 시작/중지, 시그널 발행까지 포함한 로깅 파이프라인 |
 
-### 4-3. 실행 런타임/비동기 인프라
+### 4-3. 실행 런타임/비동기 인프라 *(루트: CommandTask(QRunnable), QObject 시그널, 실행 보조 매니저)*
 
 | 파일 | 주요 클래스(상속관계) | 전담 기능 |
 |---|---|---|
@@ -155,7 +156,7 @@ classDiagram
 | `logging_signal_emitter.py` | `LoggingSignalEmitter <- QObject` | 로깅 시작/중지/에러/라인 데이터/오디오 데이터 시그널 전파 전담 |
 | `log_file_manager.py` | `LogFileManager` | 로그 파일 초기화/쓰기/종료, 파일 핸들 안정성 관리 |
 
-### 4-4. 조립/에러 처리
+### 4-4. 조립/에러 처리 *(루트: CommandFactory / CommandErrorHandler)*
 
 | 파일 | 주요 클래스(상속관계) | 전담 기능 |
 |---|---|---|
