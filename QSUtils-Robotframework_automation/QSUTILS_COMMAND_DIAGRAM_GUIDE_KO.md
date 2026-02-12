@@ -212,3 +212,87 @@ BaseCommand[T]
 ## 8) 한 줄 요약
 
 `src/QSUtils/command`는 **BaseCommand 기반의 명령 추상화**와 **WAMP/DSP 특화 하위 클래스**, 그리고 **Task/Retry/Timeout 런타임 인프라**가 결합된 구조이며, `command_factory.py`가 이를 외부에 일관된 생성 인터페이스로 노출하는 형태입니다.
+
+---
+
+## 9) 전체 상호작용 구조 (QSMonitor ↔ command, 쉬운 Mermaid)
+
+아래 다이어그램은 “사용자가 QSMonitor에서 액션을 했을 때” command 폴더가 어떻게 연결되는지를
+최소 구성으로 단순화한 것입니다.
+
+```mermaid
+flowchart LR
+    U[사용자 액션\nStart / Device Name 변경 / Dump 등] --> DW[DeviceWidget / GeneralTab]
+    DW --> FR[FeatureRegistry\n필요 CommandHandler 목록]
+    FR --> DCE[DeviceCommandExecutor\n순차 비동기 실행]
+
+    DCE --> CMD[cmd_* Command 객체\n(BaseCommand/TestWampCommand)]
+    CMD --> EX[ADBCommandExecutor]
+    EX --> DEV[ADBDevice.execute_adb_shell(_async)]
+
+    DEV --> RES[CommandResult[T]]
+    RES --> CH[CommandHandler 라우팅]
+    CH --> DP[각 Feature DataProcessor]
+    DP --> EV[EventManager 이벤트 발행]
+    EV --> UI[Feature Widget UI 갱신]
+
+    subgraph Service Path
+      CMS[CrashMonitorService Timer] --> CORE[cmd_coredump_monitor]
+      CORE --> UDC[UnifiedDumpCoordinator]
+      UDC --> JF[JFrog 업로드 분기]
+    end
+```
+
+- **Feature 경로**: `GeneralTab`이 `DeviceCommandExecutor`로 주기 command 실행 → 결과를 Feature DataProcessor가 UI 이벤트로 변환
+- **Service 경로**: `CrashMonitorService`가 별도 타이머로 command 실행 → dump/upload 오케스트레이션으로 연결
+
+---
+
+## 10) 파일별 상호작용 매트릭스 (30개 .py)
+
+> 범위: `src/QSUtils/command`의 `__init__.py`를 제외한 30개 파일.
+>
+> 표 컬럼
+> - **호출자(Who calls)**: 이 파일/클래스를 주로 사용하는 상위 모듈
+> - **피호출자(Calls to)**: 이 파일이 내부적으로 의존/호출하는 핵심 모듈
+> - **이벤트/시그널**: Qt Signal/EventManager 이벤트 발행 여부
+> - **주요 데이터 타입**: 입력/출력 시 자주 다루는 타입
+
+| 파일 | 호출자(Who calls) | 피호출자(Calls to) | 이벤트/시그널 | 주요 데이터 타입 |
+|---|---|---|---|---|
+| `base_command.py` | 대부분 `cmd_*.py`, 일부 `ADBDevice` 계층 | `command_executor.py`, `command_validator.py`, `error_handler.py` | 없음 | `CommandResult[T]`, `ExecutionContext` |
+| `command_executor.py` | `BaseCommand` | `ADBDevice.execute_adb_shell`, `ADBDevice.execute_adb_shell_async` | 없음 | `str`, `CommandResult[str]` |
+| `command_validator.py` | `BaseCommand`, `cmd_connection_manager.py`, `cmd_network_interface.py` | 내부 검증 룰 / `CommandErrorHandler` | 없음 | `dict`, `str`, `bool` |
+| `command_constants.py` | command 전역 + Network/QSMonitor 일부 | (상수/Enum 제공 파일) | 없음 | `Enum`, `TypedDict`, `CommandResult[T]` |
+| `common.py` | `base_command.py` 중심 | (공통 타입 제공) | 없음 | `ExecutionContext`, `CommandError` |
+| `cmd_test_wamp.py` | WAMP 계열 명령 전부 (`cmd_get_device_info`, `cmd_dsp_audio_setting` 등) | `BaseCommand`, `WampCommandType`, `json` 파서 | 없음 | `dict`, `list`, `CommandResult[dict]` |
+| `cmd_dsp_audio_setting.py` | `cmd_pp_*` 계열 | `TestWampCommand`, WAMP CALL 응답 파싱 | 없음 | `T(Generic)`, `dict`, `CommandResult[T]` |
+| `cmd_connection_manager.py` | `components/network/NetworkManager.py`, `NetworkMonitor.py`, `CommandFactory` | `TestWampCommand`, `ConnectionManagerCommandValidator` | 없음 | `ConnectionManagerActions`, `dict` |
+| `cmd_get_device_info.py` | `UIFramework/widgets/BaseDeviceWidget.py` | `TestWampCommand` | 없음 | `dict[str, Any]` |
+| `cmd_save_device_name.py` | `BaseDeviceWidget.py` | `TestWampCommand` | 없음 | `str`, `CommandResult[bool]` |
+| `cmd_update_device_name.py` | `BaseDeviceWidget.py` | `TestWampCommand` | 없음 | `str`, `CommandResult[bool]` |
+| `cmd_pp_speaker_remap.py` | `QSMonitor/features/SpeakerGrid/*` | `DspAudioSettingCommand[int]` | 없음 | `int` |
+| `cmd_pp_surround_speaker_remap.py` | `QSMonitor/features/SpeakerGrid/*` | `DspAudioSettingCommand[list[int]]` | 없음 | `list[int]` |
+| `cmd_pp_symphony.py` | `QSMonitor/features/DefaultMonitor/*` | `DspAudioSettingCommand[dict]` | 없음 | `dict[str,str]` |
+| `cmd_pp_symphony_group.py` | `QSMonitor/features/DefaultMonitor/*` | `DspAudioSettingCommand[str]` | 없음 | `str` |
+| `cmd_pp_symphony_volume_add.py` | `QSMonitor/features/DefaultMonitor/*` | `DspAudioSettingCommand[int]` | 없음 | `int` |
+| `cmd_network_interface.py` | `QSMonitor/features/NetworkMonitor/*`, `CommandFactory` | `BaseCommand`, `NetworkInterfaceCommandValidator` | 없음 | `dict(ipv4/ipv6/flags)` |
+| `cmd_get_preference_data.py` | `QSMonitor/features/DefaultMonitor/*`, `CommandFactory` | `BaseCommand`, JSON 파싱 | 없음 | `dict[str,str]` |
+| `cmd_coredump_monitor.py` | `QSMonitor/services/CrashMonitorService.py`, `CommandFactory` | `BaseCommand` | 간접적으로 `CRASH_DETECTED` 트리거 원인 데이터 제공 | `dict(found/files)` |
+| `cmd_reboot.py` | `BaseDeviceWidget.py`, `CommandFactory` | `BaseCommand` | 없음 | `CommandResult[bool]` |
+| `cmd_logging.py` | `ADBDevice/DeviceLoggingManager.py` | `ProcessManager`, `LogFileManager`, `LoggingSignalEmitter` | **Qt Signal 다수** (`log_line`, `error`, `started`, `stopped`) | `QProcess`, `str`, `bytes` |
+| `CommandTask.py` | `command_factory.AsyncTaskFactory`, 일부 비동기 경로 | `TaskStateManager`, `RetryPolicy`, `TimeoutManager` | **Qt Signal** (`finished`, `failed`, `progress`) | `QRunnable`, `CommandResult[Any]` |
+| `task_state_manager.py` | `CommandTask.py` | 상태 저장 로직 | 없음 | `TaskState Enum`, `float`, `int` |
+| `retry_policy.py` | `CommandTask.py`, `BaseCommand`(재시도 계산) | sleep/backoff 계산 | 없음 | `RetryStrategy`, `int`, `float` |
+| `timeout_manager.py` | `CommandTask.py` | 타임아웃 감시 쓰레드/시간 계산 | 없음 | `float`, `bool` |
+| `process_manager.py` | `cmd_logging.py` | `QProcess` | **Qt Signal 연결**(readyRead/finished/errorOccurred 핸들링) | `QProcess`, `QProcess.ProcessError` |
+| `logging_signal_emitter.py` | `cmd_logging.py` | `QObject` Signal emit | **Qt Signal 발행 전담** | `str`, `bytes`, `dict` |
+| `log_file_manager.py` | `cmd_logging.py` | 파일 I/O | 없음 | `Path`, file handle, `str` |
+| `command_factory.py` | QSMonitor/Network/UI 계층의 명령 생성 지점 | 각 `cmd_*` 클래스, `CommandTask` | 없음(생성/조립만 담당) | `type`, `dict`, `CommandTask` |
+| `error_handler.py` | `BaseCommand`, `command_executor`, `command_validator` | 로거 + `CommandResult.failure` | 없음 | `Exception`, `CommandResult[Any]` |
+
+### 10-1) 매트릭스 읽는 법 (실무 팁)
+
+- **UI 갱신/서비스 이벤트의 직접 발행 주체는 command가 아니라 Feature/Service**입니다. command는 결과(`CommandResult`)를 제공하고, 그 결과를 상위 계층이 이벤트로 변환합니다.
+- **Signal이 핵심인 예외 케이스는 `cmd_logging.py`, `CommandTask.py`**입니다. 일반 `cmd_*`는 Signal/Event 없이 값 반환 중심입니다.
+- “호출자”가 명확한 파일(`cmd_get_device_info`, `cmd_reboot`, `cmd_coredump_monitor`)은 유지보수 시 영향 범위를 빠르게 특정하기 좋습니다.
