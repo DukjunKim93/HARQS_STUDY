@@ -11,6 +11,7 @@ from QSUtils.QSMonitor.core.Events import QSMonitorEventType
 from QSUtils.QSMonitor.services.CrashMonitorService import CrashMonitorService
 from QSUtils.QSMonitor.ui.tab.AutoRebootTab import AutoRebootTab
 from QSUtils.QSMonitor.ui.tab.GeneralTab import GeneralTab
+from QSUtils.QSMonitor.ui.tab.MicrophoneTestTab import MicrophoneTestTab
 from QSUtils.UIFramework.base.CommandHandler import CommandHandler
 from QSUtils.UIFramework.base.DeviceContext import DeviceContext
 from QSUtils.UIFramework.widgets.BaseDeviceWidget import BaseDeviceWidget, SessionState
@@ -128,9 +129,15 @@ class DeviceWidget(BaseDeviceWidget):
             self, self.device_context, self.command_handler
         )
 
+        # Microphone Test 탭 생성
+        self.microphone_test_tab = MicrophoneTestTab(
+            self, self.device_context, self.command_handler
+        )
+
         # 탭 위젯에 탭 추가
         self.tab_widget.addTab(self.general_tab, "General")
         self.tab_widget.addTab(self.autoreboot_tab, "Auto Reboot")
+        self.tab_widget.addTab(self.microphone_test_tab, "Microphone Test")
 
         # app_specific_layout에 탭 위젯 추가
         self.app_specific_layout.addWidget(self.tab_widget)
