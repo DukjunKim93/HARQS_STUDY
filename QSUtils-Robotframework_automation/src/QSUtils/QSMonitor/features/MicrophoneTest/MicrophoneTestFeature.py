@@ -6,16 +6,14 @@ and real-time dB level monitoring.
 """
 
 import os
-import sys
 import time
 import subprocess
 import threading
 import tempfile
 import numpy as np
-from typing import List, Optional, Callable
-from pathlib import Path
+from typing import List, Optional, Set, Tuple
 
-from PySide6.QtCore import QObject, Signal, QTimer
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
     QWidget,
@@ -45,6 +43,10 @@ class MicrophoneTestFeature(QWidget):
     db_level_updated = Signal(float)
     # Signal for updating device list in UI thread
     devices_updated = Signal(list)
+    DEFAULT_AUDIO_DEVICES: List[Tuple[str, str]] = [
+        ("default", "Default Audio Device"),
+        ("pulse", "PulseAudio Sound Server"),
+    ]
 
     def __init__(self, parent: QWidget = None, device_context = None):
         """
@@ -199,7 +201,8 @@ class MicrophoneTestFeature(QWidget):
             )
             
             # Store device information as tuples (device_id, display_name)
-            devices = []
+            devices: List[Tuple[str, str]] = []
+            seen_device_ids: Set[str] = set()
             
             if result.returncode == 0:
                 lines = result.stdout.split('\n')
@@ -212,38 +215,18 @@ class MicrophoneTestFeature(QWidget):
                     # Parse device information
                     # Example: card 1: AT2020USB [AT2020USB+], device 0: USB Audio [USB Audio]
                     if line.startswith('card ') and 'device' in line and ':' in line:
-                        # Extract card number
-                        # Format: card X: NAME [FULL NAME], device Y: DESCRIPTION
-                        parts = line.split(',')
-                        if len(parts) >= 2:
-                            # Extract card information from first part
-                            card_part = parts[0]  # e.g., "card 1: AT2020USB [AT2020USB+]"
-                            device_part = parts[1]  # e.g., " device 0: USB Audio [USB Audio]"
-                            
-                            # Extract card number
-                            card_number = card_part.split(':')[0].replace('card ', '').strip()
-                            
-                            # Extract card name
-                            if '[' in card_part and ']' in card_part:
-                                card_name = card_part.split('[')[0].split(':', 1)[1].strip()
-                            else:
-                                card_name = card_part.split(':', 1)[1].strip()
-                            
-                            # Extract device number
-                            device_number = device_part.split(':')[0].replace('device', '').strip()
-                            
-                            # Create device identifier in correct format: hw:card,device
-                            device_id = f"hw:{card_number},{device_number}"
-                            
-                            # Create a more descriptive name for the device
-                            display_name = f"{card_name} (hw:{card_number},{device_number})"
-                            
-                            # Store both the device ID and display name
-                            devices.append((device_id, display_name))
+                        parsed_device = self._parse_arecord_device_line(line)
+                        if parsed_device:
+                            device_id, display_name = parsed_device
+                            if device_id not in seen_device_ids:
+                                devices.append((device_id, display_name))
+                                seen_device_ids.add(device_id)
             
             # Also check for default devices
-            devices.append(("default", "Default Audio Device"))
-            devices.append(("pulse", "PulseAudio Sound Server"))
+            for device_id, display_name in self.DEFAULT_AUDIO_DEVICES:
+                if device_id not in seen_device_ids:
+                    devices.append((device_id, display_name))
+                    seen_device_ids.add(device_id)
             
             # Update UI in main thread with device tuples
             self.devices_updated.emit(devices)
@@ -251,6 +234,36 @@ class MicrophoneTestFeature(QWidget):
         except Exception as e:
             LOGE(f"MicrophoneTestFeature: Error refreshing devices: {e}")
             self._log_status(f"Error refreshing devices: {e}")
+
+    @staticmethod
+    def _parse_arecord_device_line(line: str) -> Optional[Tuple[str, str]]:
+        """Parse one `arecord -l` output line into `(device_id, display_name)`.
+
+        Expected format example:
+        `card 1: AT2020USB [AT2020USB+], device 0: USB Audio [USB Audio]`
+        """
+        parts = line.split(",")
+        if len(parts) < 2:
+            return None
+
+        card_part = parts[0].strip()
+        device_part = parts[1].strip()
+
+        if not (card_part.startswith("card ") and device_part.startswith("device")):
+            return None
+
+        card_header, _, card_description = card_part.partition(":")
+        device_header, _, _ = device_part.partition(":")
+        card_number = card_header.replace("card", "").strip()
+        device_number = device_header.replace("device", "").strip()
+
+        if not card_number or not device_number:
+            return None
+
+        card_name = card_description.split("[", 1)[0].strip() if card_description else "Unknown"
+        device_id = f"hw:{card_number},{device_number}"
+        display_name = f"{card_name} ({device_id})"
+        return (device_id, display_name)
 
     def _update_device_list(self, devices: List[tuple]):
         """Update the device combo box with available devices."""
@@ -341,6 +354,7 @@ class MicrophoneTestFeature(QWidget):
 
     def _record_and_analyze(self) -> Optional[float]:
         """Record audio and analyze dB level."""
+        temp_filename: Optional[str] = None
         try:
             # Create temporary file for recording
             with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp_file:
@@ -369,12 +383,6 @@ class MicrophoneTestFeature(QWidget):
             # Analyze the recorded audio file
             db_level = self._calculate_db_level(temp_filename)
             
-            # Clean up temporary file
-            try:
-                os.unlink(temp_filename)
-            except Exception:
-                pass
-                
             return db_level
             
         except subprocess.TimeoutExpired:
@@ -385,6 +393,15 @@ class MicrophoneTestFeature(QWidget):
             LOGE(f"MicrophoneTestFeature: Error recording/analyzing audio: {e}")
             self._log_status(f"Error: {e}")
             return None
+        finally:
+            if temp_filename and os.path.exists(temp_filename):
+                try:
+                    os.unlink(temp_filename)
+                except OSError as unlink_error:
+                    LOGE(
+                        "MicrophoneTestFeature: Failed to remove temporary recording file "
+                        f"{temp_filename}: {unlink_error}"
+                    )
 
     def _calculate_db_level(self, audio_file: str) -> Optional[float]:
         """Calculate dB level from audio file using pydub."""
