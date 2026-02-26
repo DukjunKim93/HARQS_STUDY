@@ -43,6 +43,12 @@ class MicrophoneTestFeature(QWidget):
     db_level_updated = Signal(float)
     # Signal for updating device list in UI thread
     devices_updated = Signal(list)
+    # Signal for interface selection changes
+    interface_changed = Signal(str)
+    # Signal for threshold value changes
+    threshold_changed = Signal(float)
+    # Signal for monitoring state changes
+    monitoring_toggled = Signal()
 
     DEFAULT_AUDIO_DEVICES: List[Tuple[str, str]] = [
         ("default", "Default Audio Device"),
@@ -98,6 +104,12 @@ class MicrophoneTestFeature(QWidget):
 
         # Setup UI
         self._setup_ui()
+
+        # Connect additional signals for interface and threshold changes
+        if self.device_combo:
+            self.device_combo.currentTextChanged.connect(self._on_interface_changed)
+        if self.threshold_edit:
+            self.threshold_edit.textChanged.connect(self._on_threshold_changed)
 
         # Load available devices
         self._refresh_devices()
@@ -207,7 +219,7 @@ class MicrophoneTestFeature(QWidget):
             if result.returncode == 0:
                 devices = self._parse_arecord_devices(result.stdout.splitlines())
 
-            # Add common fallback devices without duplication
+                # Add common fallback devices without duplication
             existing_device_ids = {device_id for device_id, _ in devices}
             for device_id, display_name in self.DEFAULT_AUDIO_DEVICES:
                 if device_id not in existing_device_ids:
@@ -276,6 +288,9 @@ class MicrophoneTestFeature(QWidget):
             self._stop_monitoring()
         else:
             self._start_monitoring()
+            
+        # Emit monitoring toggled signal
+        self.monitoring_toggled.emit()
 
     def _start_monitoring(self):
         """Start microphone monitoring."""
@@ -308,6 +323,9 @@ class MicrophoneTestFeature(QWidget):
         self.stop_recording_event.clear()
         self.recording_thread = threading.Thread(target=self._recording_loop, daemon=True)
         self.recording_thread.start()
+        
+        # Emit monitoring toggled signal
+        self.monitoring_toggled.emit()
 
     def _stop_monitoring(self):
         """Stop microphone monitoring."""
@@ -323,6 +341,9 @@ class MicrophoneTestFeature(QWidget):
         self.is_recording = False
         self.start_stop_btn.setText("Start Monitoring")
         self._log_status("Microphone monitoring stopped.")
+        
+        # Emit monitoring toggled signal
+        self.monitoring_toggled.emit()
 
     def _recording_loop(self):
         """Main recording loop running in a separate thread."""
@@ -373,7 +394,7 @@ class MicrophoneTestFeature(QWidget):
                 
             # Analyze the recorded audio file
             db_level = self._calculate_db_level(temp_filename)
-            
+
             return db_level
             
         except subprocess.TimeoutExpired:
@@ -500,6 +521,21 @@ class MicrophoneTestFeature(QWidget):
                     # Trigger dump upload
                     self._trigger_dump_upload()
 
+    def _on_interface_changed(self, text):
+        """Handle interface selection changes."""
+        # Emit the interface changed signal with the current text
+        self.interface_changed.emit(text)
+
+    def _on_threshold_changed(self, text):
+        """Handle threshold value changes."""
+        try:
+            # Convert text to float and emit the threshold changed signal
+            threshold = float(text)
+            self.threshold_changed.emit(threshold)
+        except ValueError:
+            # If conversion fails, emit with default value
+            self.threshold_changed.emit(-30.0)
+
     def _log_status(self, message: str):
         """Add a message to the status log."""
         timestamp = time.strftime("%H:%M:%S")
@@ -544,3 +580,25 @@ class MicrophoneTestFeature(QWidget):
         except Exception as e:
             LOGE(f"MicrophoneTestFeature: Error triggering dump upload: {e}")
             self._log_status(f"Error triggering dump upload: {e}")
+
+    def get_time_since_last_threshold(self) -> str:
+        """
+        Get the time since last threshold was met in HH:MM:SS format.
+        
+        Returns:
+            str: Time since last threshold in HH:MM:SS format, or "00:00:00" if not available
+        """
+        try:
+            if self.is_recording and self.test_start_time is not None and self.last_threshold_time is not None:
+                current_time = time.time()
+                time_since_last_threshold = current_time - self.last_threshold_time
+                # Convert to hours:minutes:seconds
+                hours = int(time_since_last_threshold // 3600)
+                minutes = int((time_since_last_threshold % 3600) // 60)
+                seconds = int(time_since_last_threshold % 60)
+                return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+            else:
+                return "00:00:00"
+        except Exception as e:
+            LOGE(f"MicrophoneTestFeature: Error calculating time since last threshold: {e}")
+            return "00:00:00"
