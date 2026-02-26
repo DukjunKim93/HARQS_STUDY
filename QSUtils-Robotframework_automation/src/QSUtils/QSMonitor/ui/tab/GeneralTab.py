@@ -11,11 +11,16 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QPushButton,
     QVBoxLayout,
+    QCheckBox,
+    QFormLayout,
 )
 
 from QSUtils.QSMonitor.core.Events import QSMonitorEventType
 from QSUtils.QSMonitor.features.DefaultMonitor.DefaultMonitorFeature import (
     DefaultMonitorFeature,
+)
+from QSUtils.QSMonitor.features.MicrophoneTest.MicrophoneTestFeature import (
+    MicrophoneTestFeature,
 )
 from QSUtils.QSMonitor.features.NetworkMonitor.NetworkMonitorFeature import (
     NetworkMonitorFeature,
@@ -89,9 +94,68 @@ class GeneralTab(QWidget):
             "command_executor", self.command_executor
         )
 
+        # Get the registered MicrophoneTestFeature instance from device context
+        self.microphone_test_feature = self.device_context.get_app_component("microphone_test_feature")
+        
+        # Connect to the microphone test feature's signals for real-time updates
+        if self.microphone_test_feature:
+            # 디버그: 인스턴스 ID 출력
+            LOGD(f"GeneralTab: Using MicrophoneTestFeature instance {id(self.microphone_test_feature)}")
+            
+            # Connect to the microphone test feature's signals for real-time updates
+            self._connect_microphone_signals()
+        else:
+            # Fallback: create our own instance if none is registered
+            self.microphone_test_feature = MicrophoneTestFeature(self, self.device_context)
+            self.device_context.register_app_component(
+                "microphone_test_feature", self.microphone_test_feature
+            )
+            
+            # Connect to the microphone test feature's signals for real-time updates
+            self._connect_microphone_signals()
+            
+            # 디버그: 인스턴스 ID 출력
+            LOGD(f"GeneralTab: Created new MicrophoneTestFeature instance {id(self.microphone_test_feature)}")
+        
+    def _connect_microphone_signals(self):
+        """MicrophoneTestFeature의 시그널을 안전하게 연결"""
+        if self.microphone_test_feature:
+            # 기존 연결 해제 (중복 연결 방지)
+            try:
+                self.microphone_test_feature.db_level_updated.disconnect(self._on_microphone_db_level_updated)
+            except:
+                pass
+            try:
+                self.microphone_test_feature.devices_updated.disconnect(self._on_microphone_devices_updated)
+            except:
+                pass
+            try:
+                self.microphone_test_feature.interface_changed.disconnect(self._on_microphone_interface_changed)
+            except:
+                pass
+            try:
+                self.microphone_test_feature.threshold_changed.disconnect(self._on_microphone_threshold_changed)
+            except:
+                pass
+            try:
+                self.microphone_test_feature.monitoring_toggled.disconnect(self._on_microphone_monitoring_toggled)
+            except:
+                pass
+                
+            # 시그널 재연결
+            self.microphone_test_feature.db_level_updated.connect(self._on_microphone_db_level_updated)
+            self.microphone_test_feature.devices_updated.connect(self._on_microphone_devices_updated)
+            self.microphone_test_feature.interface_changed.connect(self._on_microphone_interface_changed)
+            self.microphone_test_feature.threshold_changed.connect(self._on_microphone_threshold_changed)
+            self.microphone_test_feature.monitoring_toggled.connect(self._on_microphone_monitoring_toggled)
+
         self.monitoring_groups = self._create_monitoring_group()
         # 레이아웃은 _setup_ui 에서 보장되지만, Optional 경고 방지를 위해 명시 레퍼런스 사용
         self.main_layout.addWidget(self.monitoring_groups)
+
+        # Add Mute Test group above Network Interface group
+        self.mute_test_group = self._create_mute_test_group()
+        self.main_layout.addWidget(self.mute_test_group)
 
         self.main_layout.addWidget(self.default_monitor_feature.get_widget())
         self.main_layout.addWidget(self.network_monitor_feature.get_widget())
@@ -139,6 +203,18 @@ class GeneralTab(QWidget):
         except Exception:
             pass
 
+
+        # Microphone test feature signal disconnection
+        try:
+            if hasattr(self, "microphone_test_feature"):
+                self.microphone_test_feature.db_level_updated.disconnect(self._on_microphone_db_level_updated)
+                self.microphone_test_feature.devices_updated.disconnect(self._on_microphone_devices_updated)
+                self.microphone_test_feature.interface_changed.disconnect(self._on_microphone_interface_changed)
+                self.microphone_test_feature.threshold_changed.disconnect(self._on_microphone_threshold_changed)
+                self.microphone_test_feature.monitoring_toggled.disconnect(self._on_microphone_monitoring_toggled)
+        except Exception:
+            pass
+
         # 이벤트 핸들러 해제
         try:
             if hasattr(self.device_context, "event_manager"):
@@ -165,6 +241,7 @@ class GeneralTab(QWidget):
             self.device_context.unregister_app_component("network_monitor_feature")
             self.device_context.unregister_app_component("speaker_grid_feature")
             self.device_context.unregister_app_component("command_executor")
+            # Don't unregister microphone_test_feature as it's registered by MicrophoneTestTab
         except Exception:
             pass
 
@@ -186,12 +263,171 @@ class GeneralTab(QWidget):
 
         # DeviceWidget의 상태 변수 리셋
         self.pending_ui_updates.clear()
+        # Note: Mute Test state is intentionally not reset to maintain independence
+
+    def reset_mute_test_state(self):
+        """Mute Test 상태 변수를 초기값으로 리셋 (독립적으로 사용 가능)"""
+        try:
+            if hasattr(self, "mute_test_start_stop_button"):
+                self.mute_test_start_stop_button.setText("Start")
+            if hasattr(self, "mute_test_start_time"):
+                self.mute_test_start_time = None
+            if hasattr(self, "mute_test_counter_value"):
+                self.mute_test_counter_value.setText("00:00:00")
+            if hasattr(self, "mute_test_is_running"):
+                self.mute_test_is_running = False
+            # Reset the microphone interface, threshold, and counter field values
+            if hasattr(self, "mute_test_microphone_interface_value"):
+                self.mute_test_microphone_interface_value.setText("N/A")
+            if hasattr(self, "mute_test_threshold_value"):
+                self.mute_test_threshold_value.setText("N/A")
+            if hasattr(self, "mute_test_counter_value"):
+                self.mute_test_counter_value.setText("00:00:00")
+        except Exception as e:
+            LOGD(f"GeneralTab: Error resetting Mute Test state: {e}")
 
     def _setup_ui(self):
         """기본 UI 레이아웃 설정"""
         # 메인 레이아웃
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
+
+    def _create_mute_test_group(self) -> QGroupBox:
+        """Create Mute Test group with Start/Stop button and related fields"""
+        mute_test_group_box = QGroupBox("Mute Test")
+        mute_test_group_layout = QFormLayout()
+        mute_test_group_box.setLayout(mute_test_group_layout)
+
+        # Start/Stop button
+        self.mute_test_start_stop_button = QPushButton("Start")
+        self.mute_test_start_stop_button.clicked.connect(self._on_mute_test_start_stop_clicked)
+        mute_test_group_layout.addRow(self.mute_test_start_stop_button)
+
+        # Microphone interface (from MicrophoneTestFeature)
+        self.mute_test_microphone_interface_label = QLabel("Microphone Interface:")
+        self.mute_test_microphone_interface_value = QLineEdit()
+        self.mute_test_microphone_interface_value.setReadOnly(True)
+        self.mute_test_microphone_interface_value.setText("N/A")
+        mute_test_group_layout.addRow(self.mute_test_microphone_interface_label, self.mute_test_microphone_interface_value)
+
+        # Threshold (from MicrophoneTestFeature)
+        self.mute_test_threshold_label = QLabel("Threshold:")
+        self.mute_test_threshold_value = QLineEdit()
+        self.mute_test_threshold_value.setReadOnly(True)
+        self.mute_test_threshold_value.setText("N/A")
+        mute_test_group_layout.addRow(self.mute_test_threshold_label, self.mute_test_threshold_value)
+
+        # Mute counter
+        self.mute_test_counter_label = QLabel("Mute Counter:")
+        self.mute_test_counter_value = QLineEdit()
+        self.mute_test_counter_value.setReadOnly(True)
+        self.mute_test_counter_value.setText("00:00:00")
+        mute_test_group_layout.addRow(self.mute_test_counter_label, self.mute_test_counter_value)
+
+        self.mute_test_start_time = None
+        self.mute_test_is_running = False
+
+        return mute_test_group_box
+
+    def _on_mute_test_start_stop_clicked(self):
+        """Handle the Start/Stop button click"""
+        # Check if microphone_test_feature is available
+        if not self.microphone_test_feature:
+            LOGD("GeneralTab: MicrophoneTestFeature is not available")
+            return
+            
+        # Toggle the mute test state by calling the MicrophoneTestFeature's toggle method
+        # This ensures consistent behavior between the Mute Test button and the Microphone Test button
+        self.microphone_test_feature._toggle_monitoring()
+        
+        # Sync the Mute Test button state with the MicrophoneTestFeature button state
+        self._sync_mute_test_button_state()
+        
+        # Update with current values from MicrophoneTestFeature
+        self._update_mute_test_values()
+
+        # Initialize mute test start time for synchronization
+        self.mute_test_start_time = 0  # Reset counter
+        self.mute_test_counter_value.setText("00:00:00")
+        
+        # Log that mute test state has changed
+        if self.mute_test_is_running:
+            LOGD("GeneralTab: Mute Test enabled")
+        else:
+            LOGD("GeneralTab: Mute Test disabled")
+
+    def _on_microphone_db_level_updated(self, db_level: float):
+        """Handle dB level updates from MicrophoneTestFeature"""
+        # Update mute test values to keep them in sync
+        self._update_mute_test_values()
+        
+        # Sync the mute counter with the time since last threshold from MicrophoneTestFeature (only when Mute Test is running)
+        if hasattr(self, "mute_test_is_running") and self.mute_test_is_running:
+            try:
+                # Use the new method to get time since last threshold from MicrophoneTestFeature
+                if hasattr(self.microphone_test_feature, 'get_time_since_last_threshold'):
+                    time_since_last_threshold = self.microphone_test_feature.get_time_since_last_threshold()
+                    # Update the mute counter to match the time since last threshold in HH:MM:SS format
+                    self.mute_test_counter_value.setText(time_since_last_threshold)
+                    LOGD(f"GeneralTab: Mute counter synced with time since last threshold: {time_since_last_threshold}")
+            except Exception as e:
+                LOGD(f"GeneralTab: Error syncing mute counter with threshold time: {e}")
+
+    def _on_microphone_interface_changed(self, text):
+        """Handle microphone interface changes from MicrophoneTestFeature"""
+        # Update mute test values to keep them in sync
+        self._update_mute_test_values()
+
+    def _on_microphone_threshold_changed(self, threshold: float):
+        """Handle microphone threshold changes from MicrophoneTestFeature"""
+        # Update mute test values to keep them in sync
+        self._update_mute_test_values()
+
+    def _on_microphone_devices_updated(self, devices: list):
+        """Handle device list updates from MicrophoneTestFeature"""
+        # Update mute test values to keep them in sync
+        self._update_mute_test_values()
+
+    def _on_microphone_monitoring_toggled(self):
+        """Handle microphone monitoring start/stop toggle from MicrophoneTestFeature"""
+        LOGD("GeneralTab: _on_microphone_monitoring_toggled called")
+        # Sync the Mute Test button state with the MicrophoneTestFeature button state
+        self._sync_mute_test_button_state()
+                
+    def _sync_mute_test_button_state(self):
+        """Sync the Mute Test button state with the MicrophoneTestFeature button state"""
+        if hasattr(self.microphone_test_feature, 'is_recording'):
+            is_recording = self.microphone_test_feature.is_recording
+            
+            # 현재 버튼 상태와 목표 상태를 비교
+            current_text = self.mute_test_start_stop_button.text()
+            target_text = "Stop" if is_recording else "Start"
+            
+            # 상태가 동일하면 업데이트하지 않음 (재귀 방지)
+            if current_text != target_text:
+                self.mute_test_start_stop_button.setText(target_text)
+                self.mute_test_is_running = is_recording
+                LOGD(f"GeneralTab: Mute Test button synced to {target_text} (Microphone test {'started' if is_recording else 'stopped'})")
+
+    def _update_mute_test_values(self):
+        """Update the Mute Test values from MicrophoneTestFeature"""
+        try:
+            # Get microphone interface from the combo box in MicrophoneTestFeature
+            if hasattr(self.microphone_test_feature, 'device_combo') and self.microphone_test_feature.device_combo.count() > 0:
+                current_text = self.microphone_test_feature.device_combo.currentText()
+                self.mute_test_microphone_interface_value.setText(current_text)
+            else:
+                self.mute_test_microphone_interface_value.setText("N/A")
+
+            # Get threshold from the threshold edit in MicrophoneTestFeature
+            if hasattr(self.microphone_test_feature, 'threshold_edit'):
+                threshold_text = self.microphone_test_feature.threshold_edit.text()
+                self.mute_test_threshold_value.setText(threshold_text)
+            else:
+                self.mute_test_threshold_value.setText("N/A")
+        except Exception as e:
+            LOGD(f"GeneralTab: Error updating Mute Test values: {e}")
+
 
     def _create_monitoring_group(self) -> QGroupBox:
         monitoring_group_box = QGroupBox("Monitoring")
@@ -328,6 +564,12 @@ class GeneralTab(QWidget):
         self.default_monitor_feature.apply_session_state(enabled)
         self.network_monitor_feature.apply_session_state(enabled)
         self.speaker_grid_feature.apply_session_state(enabled)
+        
+        # Also control the mute test feature
+        if hasattr(self, "microphone_test_feature"):
+            # The microphone test feature doesn't have an apply_session_state method
+            # but we can control its UI elements if needed
+            pass
 
     def on_toggle_clicked(self, manual: bool = False):
         if self.toggle_state_callback is not None:
@@ -376,6 +618,7 @@ class GeneralTab(QWidget):
 
     def on_session_stopped(self):
         """세션 정지 시 QSMonitor 전용 정리"""
+        
         # 상태 변수 초기화
         self._reset_state_variables()
 
@@ -389,6 +632,9 @@ class GeneralTab(QWidget):
         try:
             if hasattr(self, "command_executor") and self.command_executor:
                 self.command_executor.stop_execution()
+        except (AttributeError, RuntimeError) as e:
+            LOGD(f"GeneralTab: Failed to stop command executor: {e}")
+
         except (AttributeError, RuntimeError) as e:
             LOGD(f"GeneralTab: Failed to stop command executor: {e}")
 
