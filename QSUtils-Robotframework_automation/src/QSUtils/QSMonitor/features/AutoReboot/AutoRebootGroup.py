@@ -61,6 +61,7 @@ class AutoRebootGroup(BaseEventWidget):
         self.crash_count = 0
         self.total_run_seconds = 0
         self.auto_reboot_elapsed_sec = 0
+        self._countdown_started_after_boot = False
 
         # Auto Reboot 설정은 UI에서 직접 읽어옴
 
@@ -416,7 +417,11 @@ class AutoRebootGroup(BaseEventWidget):
         # Auto Reboot 상태만 관리하고 Event 발행
         self.auto_reboot_running = True
         self.auto_reboot_elapsed_sec = 0
-        self.auto_reboot_timer.start()
+        self.auto_reboot_timer.stop()
+        self._countdown_started_after_boot = False
+
+        if self._is_boot_ready_for_countdown():
+            self._start_countdown_after_boot()
 
         # 통계 초기화
         self._reset_statistics()
@@ -450,6 +455,7 @@ class AutoRebootGroup(BaseEventWidget):
         self.auto_reboot_started = False
         self.auto_reboot_running = False
         self.auto_reboot_timer.stop()
+        self._countdown_started_after_boot = False
 
         # Stop 시 모든 상태 변수 초기화
         self._waiting_qs_success_after_reboot = False
@@ -526,10 +532,41 @@ class AutoRebootGroup(BaseEventWidget):
             self._set_current_status("Stopped")
         elif not self.device_context.adb_device.is_connected:
             self._set_current_status("Device disconnected")
+        elif not self._countdown_started_after_boot:
+            self._set_current_status("Waiting for boot completion")
         elif self.reboot_on_qs_timer.isActive():
             self._set_current_status("Reboot within 10s...")
         else:
             self._set_current_status("Waiting for reboot")
+
+    def _is_boot_ready_for_countdown(self):
+        """카운트다운 시작 가능한 부팅 완료 상태인지 확인"""
+        try:
+            if not self.device_context.adb_device.is_connected:
+                return False
+        except Exception:
+            return False
+
+        if getattr(self, "_last_symphony_state", "Unknown") == "On":
+            return True
+
+        try:
+            default_monitor_feature = self.device_context.get_app_component(
+                "default_monitor_feature"
+            )
+            return bool(
+                default_monitor_feature
+                and default_monitor_feature.is_symphony_success()
+            )
+        except Exception:
+            return False
+
+    def _start_countdown_after_boot(self):
+        """부팅 완료 이후 Auto Reboot 카운트다운 시작"""
+        self._countdown_started_after_boot = True
+        if not self.auto_reboot_timer.isActive():
+            self.auto_reboot_timer.start()
+        LOGD("AutoRebootGroup: Countdown started after boot completion")
 
     def _load_auto_reboot_settings(self):
         """Auto Reboot 설정 로드"""
@@ -941,6 +978,7 @@ class AutoRebootGroup(BaseEventWidget):
 
         # Auto Reboot 타이머 리셋 (재부팅 완료 시점)
         self.auto_reboot_elapsed_sec = 0
+        self._start_countdown_after_boot()
         self._update_auto_reboot_ui()
         LOGD("AutoRebootGroup: Auto reboot timer reset after reboot completed")
 
@@ -1136,6 +1174,11 @@ class AutoRebootGroup(BaseEventWidget):
         if self.auto_reboot_started:
             self.success_count += 1
             self._update_auto_reboot_status()
+
+        if not self._countdown_started_after_boot:
+            self.auto_reboot_elapsed_sec = 0
+            self._start_countdown_after_boot()
+            self._update_auto_reboot_ui()
 
         # 덤프 중에는 10초 타이머 시작하지 않음
         if self.dump_manager.get_state() != DumpState.IDLE:

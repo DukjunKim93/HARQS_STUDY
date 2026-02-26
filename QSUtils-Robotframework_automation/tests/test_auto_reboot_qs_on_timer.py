@@ -160,3 +160,39 @@ def test_checkbox_checked_uses_last_state_and_deferred(group, qtbot, monkeypatch
     group.ui_elements["reboot_after_qs_on_checkbox"].setChecked(True)
     qtbot.wait(400)
     assert called["v"] >= start_calls_before + 1
+
+
+def test_start_waits_for_boot_before_countdown(group):
+    group._last_symphony_state = "Off"
+    group.device_context._default_monitor.set_success(False)
+
+    group._start_auto_reboot()
+
+    assert group.auto_reboot_running is True
+    assert group.auto_reboot_timer.isActive() is False
+    assert group._countdown_started_after_boot is False
+    assert group.ui_elements["current_status_label"].text() == "Waiting for boot completion"
+
+
+def test_symphony_on_starts_countdown_after_boot(group):
+    group._last_symphony_state = "Off"
+    group.device_context._default_monitor.set_success(False)
+    group._start_auto_reboot()
+
+    group._on_symphony_group_state_changed({"state": "On"})
+
+    assert group.auto_reboot_timer.isActive() is True
+    assert group._countdown_started_after_boot is True
+
+
+def test_reboot_completed_resets_and_restarts_countdown(group):
+    group._last_symphony_state = "On"
+    group.device_context._default_monitor.set_success(True)
+    group._start_auto_reboot()
+    group.auto_reboot_elapsed_sec = 9
+
+    group._on_reboot_completed({"result": "ok"})
+
+    assert group.auto_reboot_elapsed_sec == 0
+    assert group.auto_reboot_timer.isActive() is True
+    assert group._countdown_started_after_boot is True
