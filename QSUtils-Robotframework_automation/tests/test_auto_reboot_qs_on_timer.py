@@ -160,3 +160,27 @@ def test_checkbox_checked_uses_last_state_and_deferred(group, qtbot, monkeypatch
     group.ui_elements["reboot_after_qs_on_checkbox"].setChecked(True)
     qtbot.wait(400)
     assert called["v"] >= start_calls_before + 1
+
+
+def test_interval_paused_until_reconnect(group):
+    # Arrange
+    group.auto_reboot_running = True
+    group.auto_reboot_elapsed_sec = 0
+    group.total_run_seconds = 0
+    group.ui_elements["autoreboot_interval_edit"].setText("5")
+    group._waiting_for_device_reconnect = True
+
+    # Act: reconnect 대기 중 tick
+    group._on_auto_reboot_tick()
+
+    # Assert: total duration은 증가하지만 interval 카운트는 유지
+    assert group.total_run_seconds == 1
+    assert group.auto_reboot_elapsed_sec == 0
+
+    # Act: 연결 복구 이벤트 수신 후 tick
+    group._on_device_connection_changed({"connected": True})
+    group._on_auto_reboot_tick()
+
+    # Assert: interval 카운트 재개
+    assert group._waiting_for_device_reconnect is False
+    assert group.auto_reboot_elapsed_sec == 1

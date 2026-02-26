@@ -74,6 +74,9 @@ class AutoRebootGroup(BaseEventWidget):
         # Flag for tracking QS success after reboot
         self._waiting_qs_success_after_reboot = False
 
+        # Flag for pausing interval countdown until device boot/connection recovery completes
+        self._waiting_for_device_reconnect = False
+
         # Timer to force reboot 10s after Q-Symphony turns On (optional feature)
         self.reboot_on_qs_timer = QTimer(self)
         try:
@@ -333,12 +336,15 @@ class AutoRebootGroup(BaseEventWidget):
         if not self.auto_reboot_running:
             return
 
-        self.auto_reboot_elapsed_sec += 1
+        if not self._waiting_for_device_reconnect:
+            self.auto_reboot_elapsed_sec += 1
         self.total_run_seconds += 1
 
         # 주기 만료 시 동작: Event를 통해 DeviceWidget에 재부팅 요청
-        if self.auto_reboot_elapsed_sec >= int(
-            self.ui_elements["autoreboot_interval_edit"].text()
+        if (
+            not self._waiting_for_device_reconnect
+            and self.auto_reboot_elapsed_sec
+            >= int(self.ui_elements["autoreboot_interval_edit"].text())
         ):
             # 모든 필요한 정보를 Event 인자로 전달
             self._on_auto_reboot_timer_expired()
@@ -352,6 +358,7 @@ class AutoRebootGroup(BaseEventWidget):
 
     def request_reboot(self):
         self.auto_reboot_started = True
+        self._waiting_for_device_reconnect = True
 
         LOGI(f"AutoRebootGroup: Requesting reboot for {self.device_context.serial}")
         if self.is_check_qs_before_reboot_enabled():
@@ -453,6 +460,7 @@ class AutoRebootGroup(BaseEventWidget):
 
         # Stop 시 모든 상태 변수 초기화
         self._waiting_qs_success_after_reboot = False
+        self._waiting_for_device_reconnect = False
         self._should_reenable_check_qs_option = False
         self.auto_reboot_elapsed_sec = 0
 
@@ -524,6 +532,8 @@ class AutoRebootGroup(BaseEventWidget):
         """Auto Reboot Current Status 업데이트"""
         if not self.auto_reboot_running:
             self._set_current_status("Stopped")
+        elif self._waiting_for_device_reconnect:
+            self._set_current_status("Waiting for complete boot...")
         elif not self.device_context.adb_device.is_connected:
             self._set_current_status("Device disconnected")
         elif self.reboot_on_qs_timer.isActive():
@@ -939,10 +949,28 @@ class AutoRebootGroup(BaseEventWidget):
 
         self._waiting_qs_success_after_reboot = True
 
-        # Auto Reboot 타이머 리셋 (재부팅 완료 시점)
+        # 재부팅 요청 직후 연결 복구 전까지 interval 카운트는 정지
         self.auto_reboot_elapsed_sec = 0
         self._update_auto_reboot_ui()
-        LOGD("AutoRebootGroup: Auto reboot timer reset after reboot completed")
+        LOGD(
+            "AutoRebootGroup: Auto reboot interval reset and waiting for device reconnect"
+        )
+
+    def _on_device_connection_changed(self, args):
+        """디바이스 연결 상태 변경 Event 핸들러 - 재연결 시 interval 카운트 재개"""
+        if not self.auto_reboot_running:
+            return
+
+        connected = args.get("connected", False)
+
+        if connected and self._waiting_for_device_reconnect:
+            self._waiting_for_device_reconnect = False
+            self.auto_reboot_elapsed_sec = 0
+            self._update_auto_reboot_ui()
+            self._update_auto_reboot_current_status()
+            LOGD(
+                "AutoRebootGroup: Device reconnected - restarting interval countdown"
+            )
 
     def _on_dump_completed(self, args):
         """덤프 완료 Event 핸들러 - 재부팅 실행"""
@@ -1036,6 +1064,10 @@ class AutoRebootGroup(BaseEventWidget):
         event_manager.register_event_handler(
             QSMonitorEventType.SYMPHONY_GROUP_STATE_CHANGED,
             self._on_symphony_group_state_changed,
+        )
+        event_manager.register_event_handler(
+            CommonEventType.DEVICE_CONNECTION_CHANGED,
+            self._on_device_connection_changed,
         )
         LOGD("AutoRebootGroup: Registered specific event handlers")
 
