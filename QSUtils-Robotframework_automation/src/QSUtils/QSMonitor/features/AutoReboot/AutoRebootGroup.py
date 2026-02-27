@@ -1049,6 +1049,17 @@ class AutoRebootGroup(BaseEventWidget):
             f"AutoRebootGroup: Dump extraction started via EventManager - triggered_by: {triggered_by}"
         )
 
+        # Dump 추출 중에는 Auto Reboot 흐름을 완전히 멈춘다.
+        # (기존에는 timer tick 이 계속 진행되어 dump 중에도 reboot 요청이 발생할 수 있었음)
+        if self.auto_reboot_timer.isActive():
+            self.auto_reboot_timer.stop()
+            LOGD("AutoRebootGroup: Paused auto_reboot_timer during dump extraction")
+
+        # QS-On 기반 10초 재부팅 타이머도 함께 중지하여 dump 중 재부팅을 방지
+        if self.reboot_on_qs_timer.isActive():
+            self.reboot_on_qs_timer.stop()
+            LOGD("AutoRebootGroup: Paused reboot_on_qs_timer during dump extraction")
+
         if triggered_by == DumpTriggeredBy.CRASH_MONITOR.value:
             # Crash Count 증가
             self.crash_count += 1
