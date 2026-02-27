@@ -160,3 +160,34 @@ def test_checkbox_checked_uses_last_state_and_deferred(group, qtbot, monkeypatch
     group.ui_elements["reboot_after_qs_on_checkbox"].setChecked(True)
     qtbot.wait(400)
     assert called["v"] >= start_calls_before + 1
+
+
+def test_dump_started_pauses_auto_reboot_and_qs_on_timers(group, qtbot):
+    # Arrange: AutoReboot 실행 중 + 두 타이머 활성화
+    group.auto_reboot_running = True
+    group.auto_reboot_timer.start()
+    group.reboot_on_qs_timer.start()
+
+    assert group.auto_reboot_timer.isActive()
+    assert group.reboot_on_qs_timer.isActive()
+
+    # Act: dump 시작 이벤트 수신
+    group._on_dump_started({"triggered_by": "crash_monitor"})
+
+    # Assert: dump 추출 중에는 두 타이머 모두 정지되어야 함
+    assert not group.auto_reboot_timer.isActive()
+    assert not group.reboot_on_qs_timer.isActive()
+
+
+def test_dump_started_ignored_when_auto_reboot_not_running(group, qtbot):
+    # Arrange: AutoReboot 미실행 상태
+    group.auto_reboot_running = False
+    if group.auto_reboot_timer.isActive():
+        group.auto_reboot_timer.stop()
+    group.reboot_on_qs_timer.start()
+
+    # Act
+    group._on_dump_started({"triggered_by": "crash_monitor"})
+
+    # Assert: early return 경로로 기존 상태 유지
+    assert group.reboot_on_qs_timer.isActive()
